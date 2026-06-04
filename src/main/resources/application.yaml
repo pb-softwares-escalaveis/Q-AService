@@ -1,0 +1,86 @@
+spring:
+  application:
+    name: q&a-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/qa_service_db
+    username: qa_user
+    password: qa_pass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 60m
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          ad-service:
+            url: http://localhost:8081  # remover quando Eureka estiver ativo
+            connectTimeout: 2000
+            readTimeout: 2000
+            loggerLevel: BASIC
+      circuitbreaker:
+        enabled: true
+
+server:
+  port: 8084
+
+eureka:
+  client:
+    enabled: false
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    preferIpAddress: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, circuitbreakers
+  health:
+    circuitbreakers:
+      enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      ad-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 15s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  retry:
+    instances:
+      ad-service:
+        maxAttempts: 3
+        waitDuration: 2s
+
+logging:
+  level:
+    root: INFO
+    br.com.leilao: DEBUG
+    org.hibernate.SQL: DEBUG

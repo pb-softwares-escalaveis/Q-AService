@@ -9,7 +9,6 @@ import br.com.leilao.exception.ForbiddenOperationException;
 import br.com.leilao.integration.notification.NotificationPublisher;
 import br.com.leilao.repository.AnswerRepository;
 import br.com.leilao.service.mapper.AnswerMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,7 +45,7 @@ class AnswerServiceTest {
     @InjectMocks
     private AnswerService answerService;
 
-    private UUID adId;
+    private Long auctionId;
     private UUID questionId;
     private UUID answerId;
     private UUID sellerId;
@@ -59,7 +58,7 @@ class AnswerServiceTest {
     @BeforeEach
     void setUp()
     {
-        adId = UUID.randomUUID();
+        auctionId = 1L;
         questionId = UUID.randomUUID();
         answerId = UUID.randomUUID();
         sellerId = UUID.randomUUID();
@@ -69,7 +68,7 @@ class AnswerServiceTest {
 
         question = Question.builder()
                 .id(questionId)
-                .adId(adId)
+                .auctionId(auctionId)
                 .sellerId(sellerId)
                 .userId(buyerId)
                 .text("Pergunta?")
@@ -127,7 +126,7 @@ class AnswerServiceTest {
         verify(answerRepository).existsByQuestion_Id(questionId);
         verify(answerRepository).save(any(Answer.class));
         verify(contentAnalysisService).analyze(any(Answer.class));
-        verify(notificationPublisher).notifyBuyerNewAnswer(buyerId, questionId, adId);
+        verify(notificationPublisher).notifyBuyerNewAnswer(buyerId, questionId, auctionId);
         verify(answerMapper).toResponse(any(Answer.class));           // ← verificar chamada
     }
 

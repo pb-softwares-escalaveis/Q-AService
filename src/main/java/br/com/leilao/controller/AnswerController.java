@@ -28,4 +28,13 @@ public class AnswerController
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @DeleteMapping("/questions/{questionId}/answers/{answerId}")
+    public ResponseEntity<Void> deleteAnswer(
+            @PathVariable UUID questionId,
+            @PathVariable UUID answerId,
+            @RequestParam UUID userId) {
+        answerService.deleteAnswer(questionId, answerId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

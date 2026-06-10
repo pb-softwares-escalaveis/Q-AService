@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public record QuestionResponse(
         UUID id,
-        UUID adId,
+        Long auctionId,
         UUID userId,
         String text,
         ContentStatus status,

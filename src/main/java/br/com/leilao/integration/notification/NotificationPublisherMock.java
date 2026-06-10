@@ -10,12 +10,12 @@ import java.util.UUID;
 public class NotificationPublisherMock implements NotificationPublisher {
 
     @Override
-    public void notifySellerNewQuestion(UUID sellerId, UUID questionId, UUID adId) {
-        log.info("[MOCK] Notificando vendedor {} sobre nova pergunta {} no anúncio {}", sellerId, questionId, adId);
+    public void notifySellerNewQuestion(UUID sellerId, UUID questionId, Long auctionId) {
+        log.info("[MOCK] Notificando vendedor {} sobre nova pergunta {} no anúncio {}", sellerId, questionId, auctionId);
     }
 
     @Override
-    public void notifyBuyerNewAnswer(UUID buyerId, UUID questionId, UUID adId) {
-        log.info("[MOCK] Notificando comprador {} sobre nova resposta na pergunta {} do anúncio {}", buyerId, questionId, adId);
+    public void notifyBuyerNewAnswer(UUID buyerId, UUID questionId, Long auctionId) {
+        log.info("[MOCK] Notificando comprador {} sobre nova resposta na pergunta {} do anúncio {}", buyerId, questionId, auctionId);
     }
 }

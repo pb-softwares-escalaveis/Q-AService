@@ -14,7 +14,7 @@ public class QuestionMapper {
     public QuestionResponse toResponse(Question q) {
         return new QuestionResponse(
                 q.getId(),
-                q.getAdId(),
+                q.getAuctionId(),
                 q.getUserId(),
                 q.getText(),
                 q.getStatus(),

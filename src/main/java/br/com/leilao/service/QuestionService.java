@@ -7,8 +7,8 @@ import br.com.leilao.dto.response.QuestionResponse;
 import br.com.leilao.exception.ForbiddenOperationException;
 import br.com.leilao.exception.InvalidOperationException;
 import br.com.leilao.exception.ResourceNotFoundException;
-import br.com.leilao.integration.feign.AdClient;
-import br.com.leilao.integration.feign.dto.AdResponse;
+import br.com.leilao.integration.feign.AuctionClient;
+import br.com.leilao.integration.feign.dto.AuctionResponse;
 import br.com.leilao.integration.notification.NotificationPublisher;
 import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.QuestionMapper;
@@ -28,20 +28,20 @@ import java.util.UUID;
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
-    private final AdClient adClient;
+    private final AuctionClient auctionClient;
     private final ContentAnalysisMockService contentAnalysisServiceMock;
     private final NotificationPublisher notificationPublisher;
     private final QuestionMapper questionMapper;
 
     @Transactional
     @CacheEvict(value = "ad_questions", allEntries = true)
-    public QuestionResponse createQuestion(UUID adId, UUID userId, CreateQuestionRequest request)
+    public QuestionResponse createQuestion(Long auctionId, UUID userId, CreateQuestionRequest request)
     {
-        AdResponse adResponse = adClient.getAdById(adId);
+        AuctionResponse auctionResponse = auctionClient.getAdById(auctionId);
 
         Question question = Question.builder()
-                .adId(adId)
-                .sellerId(adResponse.sellerId())
+                .auctionId(auctionId)
+                .sellerId(auctionResponse.sellerId())
                 .userId(userId)
                 .text(request.text())
                 .status(ContentStatus.PENDING_ANALYSIS)
@@ -50,7 +50,7 @@ public class QuestionService {
         question = questionRepository.save(question);
 
         contentAnalysisServiceMock.analyze(question);
-        notificationPublisher.notifySellerNewQuestion(question.getSellerId(), question.getId(), adId);
+        notificationPublisher.notifySellerNewQuestion(question.getSellerId(), question.getId(), auctionId);
 
         return questionMapper.toResponse(question);
     }
@@ -72,10 +72,10 @@ public class QuestionService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "ad_questions", key = "#adId + '-' + #pageable.pageNumber")
-    public Page<QuestionResponse> listActiveQuestions(UUID adId, Pageable pageable)
+    @Cacheable(value = "ad_questions", key = "#auctionId + '-' + #pageable.pageNumber")
+    public Page<QuestionResponse> listActiveQuestions(Long auctionId, Pageable pageable)
     {
-        Page<Question> questionsPage = questionRepository.findByAdIdAndStatus(adId, ContentStatus.ACTIVE, pageable);
+        Page<Question> questionsPage = questionRepository.findByAuctionIdAndStatus(auctionId, ContentStatus.ACTIVE, pageable);
         List<QuestionResponse> content = questionsPage.getContent().stream()
                 .map(questionMapper::toResponse)
                 .toList();

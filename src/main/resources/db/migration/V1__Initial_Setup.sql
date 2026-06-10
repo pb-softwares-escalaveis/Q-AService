@@ -1,6 +1,6 @@
 CREATE TABLE questions (
     id UUID PRIMARY KEY,
-    ad_id UUID NOT NULL,
+    auction_id BIGINT NOT NULL,
     seller_id UUID NOT NULL,
     user_id UUID NOT NULL,
     text TEXT NOT NULL,

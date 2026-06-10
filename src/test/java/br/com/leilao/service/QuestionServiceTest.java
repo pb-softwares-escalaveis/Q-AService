@@ -4,8 +4,8 @@ import br.com.leilao.domain.entity.Question;
 import br.com.leilao.domain.enums.ContentStatus;
 import br.com.leilao.dto.request.CreateQuestionRequest;
 import br.com.leilao.dto.response.QuestionResponse;
-import br.com.leilao.integration.feign.AdClient;
-import br.com.leilao.integration.feign.dto.AdResponse;
+import br.com.leilao.integration.feign.AuctionClient;
+import br.com.leilao.integration.feign.dto.AuctionResponse;
 import br.com.leilao.integration.notification.NotificationPublisher;
 import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.QuestionMapper;
@@ -32,7 +32,7 @@ class QuestionServiceTest {
     private QuestionRepository questionRepository;
 
     @Mock
-    private AdClient adClient;
+    private AuctionClient auctionClient;
 
     @Mock
     private ContentAnalysisMockService contentAnalysisService;
@@ -46,29 +46,29 @@ class QuestionServiceTest {
     @InjectMocks
     private QuestionService questionService;
 
-    private UUID adId;
+    private Long auctionId;
     private UUID userId;
     private UUID sellerId;
     private UUID questionId;
     private CreateQuestionRequest createRequest;
     private Question savedQuestion;
-    private AdResponse adResponse;
+    private AuctionResponse auctionResponse;
     private QuestionResponse questionResponse;
 
     @BeforeEach
     void setUp()
     {
-        adId = UUID.randomUUID();
+        auctionId = 1L;
         userId = UUID.randomUUID();
         sellerId = UUID.randomUUID();
         questionId = UUID.randomUUID();
 
         createRequest = new CreateQuestionRequest("Esta é uma pergunta de teste?");
-        adResponse = new AdResponse(adId, sellerId);
+        auctionResponse = new AuctionResponse(auctionId, sellerId);
 
         savedQuestion = Question.builder()
                 .id(questionId)
-                .adId(adId)
+                .auctionId(auctionId)
                 .sellerId(sellerId)
                 .userId(userId)
                 .text(createRequest.text())
@@ -79,7 +79,7 @@ class QuestionServiceTest {
 
         questionResponse = new QuestionResponse(
                 questionId,
-                adId,
+                auctionId,
                 userId,
                 createRequest.text(),
                 ContentStatus.ACTIVE,
@@ -95,24 +95,24 @@ class QuestionServiceTest {
     void deveCriarQuestionComSucesso()
     {
         // Arrange
-        when(adClient.getAdById(adId)).thenReturn(adResponse);
+        when(auctionClient.getAdById(auctionId)).thenReturn(auctionResponse);
         when(questionRepository.save(any(Question.class))).thenReturn(savedQuestion);
         when(questionMapper.toResponse(any(Question.class))).thenReturn(questionResponse);
 
         // Act
-        QuestionResponse response = questionService.createQuestion(adId, userId, createRequest);
+        QuestionResponse response = questionService.createQuestion(auctionId, userId, createRequest);
 
         // Assert
         assertNotNull(response);
         assertEquals(questionId, response.id());
-        assertEquals(adId, response.adId());
+        assertEquals(auctionId, response.auctionId());
         assertEquals(userId, response.userId());
         assertEquals(ContentStatus.ACTIVE, response.status());
 
-        verify(adClient, times(1)).getAdById(adId);
+        verify(auctionClient, times(1)).getAdById(auctionId);
         verify(questionRepository, times(1)).save(any(Question.class));
         verify(contentAnalysisService, times(1)).analyze(any(Question.class));
-        verify(notificationPublisher, times(1)).notifySellerNewQuestion(sellerId, questionId, adId);
+        verify(notificationPublisher, times(1)).notifySellerNewQuestion(sellerId, questionId, auctionId);
         verify(questionMapper).toResponse(any(Question.class));
     }
 

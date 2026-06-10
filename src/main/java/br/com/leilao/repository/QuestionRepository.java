@@ -14,5 +14,5 @@ import java.util.UUID;
 public interface QuestionRepository extends JpaRepository<Question, UUID> {
     
     @EntityGraph(attributePaths = {"answer"})
-    Page<Question> findByAdIdAndStatus(UUID adId, ContentStatus status, Pageable pageable);
+    Page<Question> findByAuctionIdAndStatus(Long auctionId, ContentStatus status, Pageable pageable);
 }

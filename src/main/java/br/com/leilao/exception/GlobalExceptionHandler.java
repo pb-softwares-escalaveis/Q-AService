@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(AdServiceUnavailableException.class)
-    public ResponseEntity<ErrorResponse> handleAdServiceUnavailable(AdServiceUnavailableException ex, HttpServletRequest request) {
+    @ExceptionHandler(AuctionServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleAuctionServiceUnavailable(AuctionServiceUnavailableException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.SERVICE_UNAVAILABLE, "Service Unavailable", ex.getMessage(), request);
     }
 

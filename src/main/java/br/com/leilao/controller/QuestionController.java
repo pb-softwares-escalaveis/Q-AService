@@ -23,12 +23,12 @@ public class QuestionController
 
     private final QuestionService questionService;
 
-    @PostMapping("/ads/{adId}/questions")
+    @PostMapping("/auctions/{auctionId}/questions")
     public ResponseEntity<QuestionResponse> createQuestion(
-            @PathVariable UUID adId,
+            @PathVariable Long auctionId,
             @RequestParam UUID userId,
             @Valid @RequestBody CreateQuestionRequest request) {
-        QuestionResponse response = questionService.createQuestion(adId, userId, request);
+        QuestionResponse response = questionService.createQuestion(auctionId, userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -40,13 +40,13 @@ public class QuestionController
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/ads/{adId}/questions")
+    @GetMapping("/auctions/{auctionId}/questions")
     public ResponseEntity<Page<QuestionResponse>> listQuestions(
-            @PathVariable UUID adId,
+            @PathVariable Long auctionId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
-        Page<QuestionResponse> response = questionService.listActiveQuestions(adId, pageable);
+        Page<QuestionResponse> response = questionService.listActiveQuestions(auctionId, pageable);
         return ResponseEntity.ok(response);
     }
 }

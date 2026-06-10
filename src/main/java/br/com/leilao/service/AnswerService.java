@@ -57,10 +57,28 @@ public class AnswerService {
         answer = answerRepository.save(answer);
         contentAnalysisServiceMock.analyze(answer);
 
-        notificationPublisher.notifyBuyerNewAnswer(question.getUserId(), questionId, question.getAdId());
+        notificationPublisher.notifyBuyerNewAnswer(question.getUserId(), questionId, question.getAuctionId());
 
         return answerMapper.toResponse(answer);
     }
+
+    @Transactional
+    @CacheEvict(value = "ad_questions", allEntries = true)
+    public void deleteAnswer(UUID questionId, UUID answerId, UUID userId) {
+        Answer answer = getAnswerById(answerId);
+
+        if (!answer.getQuestion().getId().equals(questionId)) {
+            throw new InvalidOperationException("A resposta não pertence a esta pergunta.");
+        }
+
+        if (!answer.getUserId().equals(userId)) {
+            throw new ForbiddenOperationException("Você não tem permissão para excluir esta resposta.");
+        }
+
+        answer.setStatus(ContentStatus.DELETED);
+    }
+
+
 
     private Answer getAnswerById(UUID answerId)
     {

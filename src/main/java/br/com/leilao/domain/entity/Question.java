@@ -24,7 +24,7 @@ public class Question {
     private UUID id;
 
     @Column(nullable = false)
-    private UUID adId;
+    private Long auctionId;
 
     @Column(nullable = false)
     private UUID sellerId;

@@ -1,7 +1,6 @@
 package br.com.leilao.controller;
 
 import br.com.leilao.dto.request.CreateQuestionRequest;
-import br.com.leilao.dto.request.UpdateQuestionRequest;
 import br.com.leilao.dto.response.QuestionResponse;
 import br.com.leilao.service.QuestionService;
 import jakarta.validation.Valid;
@@ -31,15 +30,6 @@ public class QuestionController
             @Valid @RequestBody CreateQuestionRequest request) {
         QuestionResponse response = questionService.createQuestion(adId, userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @PutMapping("/questions/{questionId}")
-    public ResponseEntity<QuestionResponse> updateQuestion(
-            @PathVariable UUID questionId,
-            @RequestParam UUID userId,
-            @Valid @RequestBody UpdateQuestionRequest request) {
-        QuestionResponse response = questionService.updateQuestion(questionId, userId, request);
-        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/questions/{questionId}")

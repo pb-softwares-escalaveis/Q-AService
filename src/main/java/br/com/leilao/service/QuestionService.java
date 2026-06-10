@@ -3,7 +3,6 @@ package br.com.leilao.service;
 import br.com.leilao.domain.entity.Question;
 import br.com.leilao.domain.enums.ContentStatus;
 import br.com.leilao.dto.request.CreateQuestionRequest;
-import br.com.leilao.dto.request.UpdateQuestionRequest;
 import br.com.leilao.dto.response.QuestionResponse;
 import br.com.leilao.exception.ForbiddenOperationException;
 import br.com.leilao.exception.InvalidOperationException;
@@ -52,29 +51,6 @@ public class QuestionService {
 
         contentAnalysisServiceMock.analyze(question);
         notificationPublisher.notifySellerNewQuestion(question.getSellerId(), question.getId(), adId);
-
-        return questionMapper.toResponse(question);
-    }
-
-    @Transactional
-    @CacheEvict(value = "ad_questions", allEntries = true)
-    public QuestionResponse updateQuestion(UUID questionId, UUID userId, UpdateQuestionRequest request)
-    {
-        Question question = getQuestionById(questionId);
-
-        if (!question.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException("Você não tem permissão para editar esta pergunta.");
-        }
-
-        if (question.getStatus() == ContentStatus.DELETED) {
-            throw new InvalidOperationException("Não é possível editar uma pergunta deletada.");
-        }
-
-        question.setText(request.text());
-        question.setStatus(ContentStatus.PENDING_ANALYSIS);
-        question.setRejectionReason(null);
-
-        contentAnalysisServiceMock.analyze(question);
 
         return questionMapper.toResponse(question);
     }

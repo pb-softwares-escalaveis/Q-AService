@@ -6,6 +6,7 @@ import br.com.leilao.dto.request.CreateQuestionRequest;
 import br.com.leilao.dto.response.QuestionResponse;
 import br.com.leilao.integration.feign.AuctionClient;
 import br.com.leilao.integration.feign.dto.AuctionResponse;
+import br.com.leilao.integration.kafka.KafkaProducerService;
 import br.com.leilao.integration.notification.NotificationPublisher;
 import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.QuestionMapper;
@@ -35,7 +36,7 @@ class QuestionServiceTest {
     private AuctionClient auctionClient;
 
     @Mock
-    private ContentAnalysisMockService contentAnalysisService;
+    private KafkaProducerService kafkaProducerService;
 
     @Mock
     private NotificationPublisher notificationPublisher;
@@ -72,7 +73,7 @@ class QuestionServiceTest {
                 .sellerId(sellerId)
                 .userId(userId)
                 .text(createRequest.text())
-                .status(ContentStatus.ACTIVE)
+                .status(ContentStatus.PENDING_ANALYSIS)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -82,7 +83,7 @@ class QuestionServiceTest {
                 auctionId,
                 userId,
                 createRequest.text(),
-                ContentStatus.ACTIVE,
+                ContentStatus.PENDING_ANALYSIS,
                 null,
                 savedQuestion.getCreatedAt(),
                 savedQuestion.getUpdatedAt(),
@@ -91,7 +92,7 @@ class QuestionServiceTest {
     }
 
     @Test
-    @DisplayName("Deve criar uma Question com sucesso e retornar o status ACTIVE")
+    @DisplayName("Deve criar uma Question com sucesso e retornar o status PENDING_ANALYSIS")
     void deveCriarQuestionComSucesso()
     {
         // Arrange
@@ -107,12 +108,12 @@ class QuestionServiceTest {
         assertEquals(questionId, response.id());
         assertEquals(auctionId, response.auctionId());
         assertEquals(userId, response.userId());
-        assertEquals(ContentStatus.ACTIVE, response.status());
+        assertEquals(ContentStatus.PENDING_ANALYSIS, response.status());
 
         verify(auctionClient, times(1)).getAdById(auctionId);
         verify(questionRepository, times(1)).save(any(Question.class));
-        verify(contentAnalysisService, times(1)).analyze(any(Question.class));
-        verify(notificationPublisher, times(1)).notifySellerNewQuestion(sellerId, questionId, auctionId);
+        verify(kafkaProducerService, times(1)).sendForReview(any());
+        verifyNoInteractions(notificationPublisher);
         verify(questionMapper).toResponse(any(Question.class));
     }
 

@@ -6,6 +6,7 @@ import br.com.leilao.domain.enums.ContentStatus;
 import br.com.leilao.dto.request.CreateAnswerRequest;
 import br.com.leilao.dto.response.AnswerResponse;
 import br.com.leilao.exception.ForbiddenOperationException;
+import br.com.leilao.integration.kafka.KafkaProducerService;
 import br.com.leilao.integration.notification.NotificationPublisher;
 import br.com.leilao.repository.AnswerRepository;
 import br.com.leilao.service.mapper.AnswerMapper;
@@ -34,7 +35,7 @@ class AnswerServiceTest {
     private QuestionService questionService;
 
     @Mock
-    private ContentAnalysisMockService contentAnalysisService;
+    private KafkaProducerService kafkaProducerService;
 
     @Mock
     private NotificationPublisher notificationPublisher;
@@ -80,7 +81,7 @@ class AnswerServiceTest {
                 .question(question)
                 .userId(sellerId)
                 .text(createRequest.text())
-                .status(ContentStatus.ACTIVE)
+                .status(ContentStatus.PENDING_ANALYSIS)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -97,7 +98,7 @@ class AnswerServiceTest {
                 questionId,
                 sellerId,
                 createRequest.text(),
-                ContentStatus.ACTIVE,
+                ContentStatus.PENDING_ANALYSIS,
                 null,
                 LocalDateTime.now(),
                 LocalDateTime.now()
@@ -120,13 +121,13 @@ class AnswerServiceTest {
         assertEquals(answerId, response.id());
         assertEquals(sellerId, response.userId());
         assertEquals(questionId, response.questionId());
-        assertEquals(ContentStatus.ACTIVE, response.status());
+        assertEquals(ContentStatus.PENDING_ANALYSIS, response.status());
 
         verify(questionService).getQuestionById(questionId);
         verify(answerRepository).existsByQuestion_Id(questionId);
         verify(answerRepository).save(any(Answer.class));
-        verify(contentAnalysisService).analyze(any(Answer.class));
-        verify(notificationPublisher).notifyBuyerNewAnswer(buyerId, questionId, auctionId);
+        verify(kafkaProducerService).sendForReview(any());
+        verifyNoInteractions(notificationPublisher);
         verify(answerMapper).toResponse(any(Answer.class));           // ← verificar chamada
     }
 
@@ -146,7 +147,7 @@ class AnswerServiceTest {
         assertEquals("Apenas o vendedor do anúncio pode responder a pergunta.", exception.getMessage());
 
         verify(questionService).getQuestionById(questionId);
-        verifyNoInteractions(answerRepository, contentAnalysisService,
+        verifyNoInteractions(answerRepository, kafkaProducerService,
                 notificationPublisher, answerMapper);
     }
 }

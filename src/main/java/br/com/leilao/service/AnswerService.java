@@ -9,6 +9,8 @@ import br.com.leilao.exception.AnswerAlreadyExistsException;
 import br.com.leilao.exception.ForbiddenOperationException;
 import br.com.leilao.exception.InvalidOperationException;
 import br.com.leilao.exception.ResourceNotFoundException;
+import br.com.leilao.integration.kafka.KafkaProducerService;
+import br.com.leilao.integration.kafka.events.MessageCreatedPendingReview;
 import br.com.leilao.integration.notification.NotificationPublisher;
 import br.com.leilao.repository.AnswerRepository;
 import br.com.leilao.service.mapper.AnswerMapper;
@@ -17,6 +19,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -25,7 +28,7 @@ public class AnswerService {
 
     private final AnswerRepository answerRepository;
     private final QuestionService questionService;
-    private final ContentAnalysisMockService contentAnalysisServiceMock;
+    private final KafkaProducerService kafkaProducerService;
     private final NotificationPublisher notificationPublisher;
     private final AnswerMapper answerMapper;
 
@@ -55,9 +58,19 @@ public class AnswerService {
                 .build();
 
         answer = answerRepository.save(answer);
-        contentAnalysisServiceMock.analyze(answer);
 
-        notificationPublisher.notifyBuyerNewAnswer(question.getUserId(), questionId, question.getAuctionId());
+        MessageCreatedPendingReview event = new MessageCreatedPendingReview(
+                question.getAuctionId(),
+                userId,
+                answer.getId(),
+                "Seller Name Placeholder", // TODO: No futuro, obter detalhes do vendedor
+                "seller@email.com",         // TODO: No futuro, obter detalhes do vendedor
+                answer.getText(),
+                Instant.now(),
+                UUID.randomUUID()
+        );
+
+        kafkaProducerService.sendForReview(event);
 
         return answerMapper.toResponse(answer);
     }
@@ -73,6 +86,10 @@ public class AnswerService {
 
         if (!answer.getUserId().equals(userId)) {
             throw new ForbiddenOperationException("Você não tem permissão para excluir esta resposta.");
+        }
+
+        if (answer.getStatus() == ContentStatus.PENDING_ANALYSIS) {
+            throw new InvalidOperationException("Não é permitido excluir uma resposta que ainda está em análise.");
         }
 
         answer.setStatus(ContentStatus.DELETED);

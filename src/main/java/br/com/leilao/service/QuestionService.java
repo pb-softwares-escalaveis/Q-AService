@@ -9,6 +9,8 @@ import br.com.leilao.exception.InvalidOperationException;
 import br.com.leilao.exception.ResourceNotFoundException;
 import br.com.leilao.integration.feign.AuctionClient;
 import br.com.leilao.integration.feign.dto.AuctionResponse;
+import br.com.leilao.integration.kafka.KafkaProducerService;
+import br.com.leilao.integration.kafka.events.MessageCreatedPendingReview;
 import br.com.leilao.integration.notification.NotificationPublisher;
 import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.QuestionMapper;
@@ -20,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,7 +32,7 @@ public class QuestionService {
 
     private final QuestionRepository questionRepository;
     private final AuctionClient auctionClient;
-    private final ContentAnalysisMockService contentAnalysisServiceMock;
+    private final KafkaProducerService kafkaProducerService;
     private final NotificationPublisher notificationPublisher;
     private final QuestionMapper questionMapper;
 
@@ -49,8 +52,18 @@ public class QuestionService {
 
         question = questionRepository.save(question);
 
-        contentAnalysisServiceMock.analyze(question);
-        notificationPublisher.notifySellerNewQuestion(question.getSellerId(), question.getId(), auctionId);
+        MessageCreatedPendingReview event = new MessageCreatedPendingReview(
+                auctionId,
+                question.getSellerId(),
+                question.getId(),
+                "Seller Name Placeholder", // TODO: No futuro, obter detalhes do vendedor
+                "seller@email.com",         // TODO: No futuro, obter detalhes do vendedor
+                question.getText(),
+                Instant.now(),
+                UUID.randomUUID()
+        );
+
+        kafkaProducerService.sendForReview(event);
 
         return questionMapper.toResponse(question);
     }
@@ -63,6 +76,10 @@ public class QuestionService {
 
         if (!question.getUserId().equals(userId)) {
             throw new ForbiddenOperationException("Você não tem permissão para excluir esta pergunta.");
+        }
+
+        if (question.getStatus() == ContentStatus.PENDING_ANALYSIS) {
+            throw new InvalidOperationException("Não é permitido excluir uma pergunta que ainda está em análise.");
         }
 
         question.setStatus(ContentStatus.DELETED);

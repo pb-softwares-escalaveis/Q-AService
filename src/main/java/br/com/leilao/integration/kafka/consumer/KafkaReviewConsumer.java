@@ -6,7 +6,6 @@ import br.com.leilao.domain.enums.ContentStatus;
 import br.com.leilao.domain.enums.RejectionReason;
 import br.com.leilao.integration.kafka.events.MessageReviewApproved;
 import br.com.leilao.integration.kafka.events.MessageReviewRejected;
-import br.com.leilao.integration.notification.NotificationPublisher;
 import br.com.leilao.repository.AnswerRepository;
 import br.com.leilao.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ public class KafkaReviewConsumer {
 
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
-    private final NotificationPublisher notificationPublisher;
 
     @Transactional
     @KafkaListener(topics = "${app.kafka.topics.qa-review-approved}", groupId = "qa-group")
@@ -37,10 +35,8 @@ public class KafkaReviewConsumer {
             Question question = questionOpt.get();
             question.setStatus(ContentStatus.ACTIVE);
             questionRepository.save(question);
-            
-            log.info("[KAFKA CONSUMER] Pergunta {} marcada como ACTIVE. Disparando notificação...", question.getId());
 
-            notificationPublisher.notifySellerNewQuestion(question.getSellerId(), question.getId(), question.getAuctionId());
+            log.info("[KAFKA CONSUMER] Pergunta {} marcada como ACTIVE.", question.getId());
             return;
         }
 
@@ -49,9 +45,8 @@ public class KafkaReviewConsumer {
             Answer answer = answerOpt.get();
             answer.setStatus(ContentStatus.ACTIVE);
             answerRepository.save(answer);
-            
-            log.info("[KAFKA CONSUMER] Resposta {} marcada como ACTIVE. Disparando notificação...", answer.getId());
-            notificationPublisher.notifyBuyerNewAnswer(answer.getQuestion().getUserId(), answer.getQuestion().getId(), answer.getQuestion().getAuctionId());
+
+            log.info("[KAFKA CONSUMER] Resposta {} marcada como ACTIVE.", answer.getId());
             return;
         }
 
@@ -68,7 +63,7 @@ public class KafkaReviewConsumer {
         if (questionOpt.isPresent()) {
             Question question = questionOpt.get();
             question.setStatus(ContentStatus.REJECTED);
-            question.setRejectionReason(RejectionReason.OFFENSIVE); 
+            question.setRejectionReason(RejectionReason.OFFENSIVE);
             questionRepository.save(question);
             log.info("[KAFKA CONSUMER] Pergunta {} marcada como REJECTED.", question.getId());
             return;

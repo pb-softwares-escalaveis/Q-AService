@@ -34,7 +34,7 @@ public class QuestionController
 
     @DeleteMapping("/questions/{questionId}")
     public ResponseEntity<Void> deleteQuestion(
-            @PathVariable UUID questionId,
+            @PathVariable Long questionId,
             @RequestParam UUID userId) {
         questionService.deleteQuestion(questionId, userId);
         return ResponseEntity.noContent().build();

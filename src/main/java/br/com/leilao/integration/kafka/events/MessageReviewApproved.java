@@ -6,7 +6,7 @@ import java.util.UUID;
 public record MessageReviewApproved(
         Long auctionId,
         UUID sellerId,
-        UUID messageId,
+        Long messageId,
         String sellerName,
         String sellerEmail,
         String message,

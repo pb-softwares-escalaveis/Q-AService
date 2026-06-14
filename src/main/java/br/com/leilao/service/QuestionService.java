@@ -91,7 +91,7 @@ public class QuestionService
 
     @Transactional
     @CacheEvict(value = "ad_questions", allEntries = true)
-    public void deleteQuestion(UUID questionId, UUID userId)
+    public void deleteQuestion(Long questionId, UUID userId)
     {
         Question question = getQuestionById(questionId);
 
@@ -121,7 +121,7 @@ public class QuestionService
         return new br.com.leilao.dto.response.RestResponsePage<>(content, pageable, questionsPage.getTotalElements());
     }
 
-    public Question getQuestionById(UUID questionId)
+    public Question getQuestionById(Long questionId)
     {
         return questionRepository.findById(questionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pergunta não encontrada."));

@@ -50,8 +50,8 @@ class AnswerServiceTest
     private AnswerService answerService;
 
     private Long auctionId;
-    private UUID questionId;
-    private UUID answerId;
+    private Long questionId;
+    private Long answerId;
     private UUID sellerId;
     private UUID buyerId;
     
@@ -62,11 +62,11 @@ class AnswerServiceTest
     @BeforeEach
     void setUp()
     {
-        ReflectionTestUtils.setField(answerService, "topic", "qa.question.created");
+        ReflectionTestUtils.setField(answerService, "topic", "qa.created-pending");
 
         auctionId = 1L;
-        questionId = UUID.randomUUID();
-        answerId = UUID.randomUUID();
+        questionId = 100L;
+        answerId = 200L;
         sellerId = UUID.randomUUID();
         buyerId = UUID.randomUUID();
 

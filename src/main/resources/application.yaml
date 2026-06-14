@@ -34,9 +34,7 @@ spring:
     bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:                                    
-        spring.json.add.type.headers: false          
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
       group-id: qa-group
       auto-offset-reset: earliest
@@ -48,9 +46,9 @@ spring:
 app:
   kafka:
     topics:
-      qa-created-pending: "qa.question.created"      
-      qa-review-approved: "reviews.question.approved" 
-      qa-review-rejected: "reviews.question.rejected" 
+      qa-created-pending: "qa.created-pending"
+      qa-review-approved: "qa.review.approved"
+      qa-review-rejected: "qa.review.rejected"
     redis:
       time-to-live: 60m
 

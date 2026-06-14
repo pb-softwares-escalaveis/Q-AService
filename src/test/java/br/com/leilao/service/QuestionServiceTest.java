@@ -52,7 +52,7 @@ class QuestionServiceTest
     private Long auctionId;
     private UUID userId;
     private UUID sellerId;
-    private UUID questionId;
+    private Long questionId;
     private CreateQuestionRequest createRequest;
     private Question savedQuestion;
     private AuctionResponse auctionResponse;
@@ -62,12 +62,12 @@ class QuestionServiceTest
     void setUp()
     {
         // Injeta a variável @Value no mock
-        ReflectionTestUtils.setField(questionService, "topic", "qa.question.created");
+        ReflectionTestUtils.setField(questionService, "topic", "qa.created-pending");
 
         auctionId = 1L;
         userId = UUID.randomUUID();
         sellerId = UUID.randomUUID();
-        questionId = UUID.randomUUID();
+        questionId = 100L;
 
         createRequest = new CreateQuestionRequest("Esta é uma pergunta de teste?");
         auctionResponse = new AuctionResponse(auctionId, sellerId);

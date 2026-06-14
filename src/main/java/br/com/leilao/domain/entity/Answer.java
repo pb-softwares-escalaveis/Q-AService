@@ -1,7 +1,6 @@
 package br.com.leilao.domain.entity;
 
 import br.com.leilao.domain.enums.ContentStatus;
-import br.com.leilao.domain.enums.RejectionReason;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -20,8 +19,8 @@ import java.util.UUID;
 public class Answer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id", unique = true, nullable = false)
@@ -37,8 +36,7 @@ public class Answer {
     @Column(nullable = false)
     private ContentStatus status;
 
-    @Enumerated(EnumType.STRING)
-    private RejectionReason rejectionReason;
+    private String rejectionReason;
 
     @CreationTimestamp
     @Column(updatable = false)

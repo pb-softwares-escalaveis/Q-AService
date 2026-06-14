@@ -3,7 +3,6 @@ package br.com.leilao.integration.kafka.consumer;
 import br.com.leilao.domain.entity.Answer;
 import br.com.leilao.domain.entity.Question;
 import br.com.leilao.domain.enums.ContentStatus;
-import br.com.leilao.domain.enums.RejectionReason;
 import br.com.leilao.integration.kafka.events.MessageReviewApproved;
 import br.com.leilao.integration.kafka.events.MessageReviewRejected;
 import br.com.leilao.repository.AnswerRepository;
@@ -63,7 +62,7 @@ public class KafkaReviewConsumer {
         if (questionOpt.isPresent()) {
             Question question = questionOpt.get();
             question.setStatus(ContentStatus.REJECTED);
-            question.setRejectionReason(RejectionReason.OFFENSIVE); 
+            question.setRejectionReason(event.reason());
             questionRepository.save(question);
             log.info("[KAFKA CONSUMER] Pergunta {} marcada como REJECTED.", question.getId());
             return;
@@ -73,7 +72,7 @@ public class KafkaReviewConsumer {
         if (answerOpt.isPresent()) {
             Answer answer = answerOpt.get();
             answer.setStatus(ContentStatus.REJECTED);
-            answer.setRejectionReason(RejectionReason.OFFENSIVE);
+            answer.setRejectionReason(event.reason());
             answerRepository.save(answer);
             log.info("[KAFKA CONSUMER] Resposta {} marcada como REJECTED.", answer.getId());
             return;

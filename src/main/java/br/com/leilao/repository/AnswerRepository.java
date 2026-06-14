@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface AnswerRepository extends JpaRepository<Answer, UUID> {
-    boolean existsByQuestion_Id(UUID questionId);
+public interface AnswerRepository extends JpaRepository<Answer, Long> {
+    boolean existsByQuestion_Id(Long questionId);
 }

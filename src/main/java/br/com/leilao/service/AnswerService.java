@@ -41,7 +41,7 @@ public class AnswerService
 
     @Transactional
     @CacheEvict(value = "ad_questions", allEntries = true)
-    public AnswerResponse createAnswer(UUID questionId, UUID userId, CreateAnswerRequest request)
+    public AnswerResponse createAnswer(Long questionId, UUID userId, CreateAnswerRequest request)
     {
         Question question = questionService.getQuestionById(questionId);
 
@@ -96,7 +96,7 @@ public class AnswerService
 
     @Transactional
     @CacheEvict(value = "ad_questions", allEntries = true)
-    public void deleteAnswer(UUID questionId, UUID answerId, UUID userId) {
+    public void deleteAnswer(Long questionId, Long answerId, UUID userId) {
         Answer answer = getAnswerById(answerId);
 
         if (!answer.getQuestion().getId().equals(questionId)) {
@@ -114,7 +114,7 @@ public class AnswerService
         answer.setStatus(ContentStatus.DELETED);
     }
 
-    private Answer getAnswerById(UUID answerId)
+    private Answer getAnswerById(Long answerId)
     {
         return answerRepository.findById(answerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Resposta não encontrada."));

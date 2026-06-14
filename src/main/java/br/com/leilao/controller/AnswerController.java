@@ -21,7 +21,7 @@ public class AnswerController
 
     @PostMapping("/questions/{questionId}/answers")
     public ResponseEntity<AnswerResponse> createAnswer(
-            @PathVariable UUID questionId,
+            @PathVariable Long questionId,
             @RequestParam UUID userId,
             @Valid @RequestBody CreateAnswerRequest request) {
         AnswerResponse response = answerService.createAnswer(questionId, userId, request);
@@ -30,8 +30,8 @@ public class AnswerController
 
     @DeleteMapping("/questions/{questionId}/answers/{answerId}")
     public ResponseEntity<Void> deleteAnswer(
-            @PathVariable UUID questionId,
-            @PathVariable UUID answerId,
+            @PathVariable Long questionId,
+            @PathVariable Long answerId,
             @RequestParam UUID userId) {
         answerService.deleteAnswer(questionId, answerId, userId);
         return ResponseEntity.noContent().build();

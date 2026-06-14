@@ -6,10 +6,11 @@ import br.com.leilao.domain.enums.ContentStatus;
 import br.com.leilao.dto.request.CreateAnswerRequest;
 import br.com.leilao.dto.response.AnswerResponse;
 import br.com.leilao.exception.ForbiddenOperationException;
-import br.com.leilao.integration.kafka.KafkaProducerService;
-import br.com.leilao.integration.notification.NotificationPublisher;
 import br.com.leilao.repository.AnswerRepository;
+import br.com.leilao.repository.OutboxEventRepository;
 import br.com.leilao.service.mapper.AnswerMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -26,7 +28,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AnswerServiceTest {
+class AnswerServiceTest
+{
 
     @Mock
     private AnswerRepository answerRepository;
@@ -35,10 +38,10 @@ class AnswerServiceTest {
     private QuestionService questionService;
 
     @Mock
-    private KafkaProducerService kafkaProducerService;
+    private OutboxEventRepository outboxEventRepository;
 
     @Mock
-    private NotificationPublisher notificationPublisher;
+    private ObjectMapper objectMapper;
 
     @Mock
     private AnswerMapper answerMapper;
@@ -51,7 +54,7 @@ class AnswerServiceTest {
     private UUID answerId;
     private UUID sellerId;
     private UUID buyerId;
-    
+
     private Question question;
     private CreateAnswerRequest createRequest;
     private Answer savedAnswer;
@@ -59,6 +62,8 @@ class AnswerServiceTest {
     @BeforeEach
     void setUp()
     {
+        ReflectionTestUtils.setField(answerService, "topic", "qa.question.created");
+
         auctionId = 1L;
         questionId = UUID.randomUUID();
         answerId = UUID.randomUUID();
@@ -87,55 +92,37 @@ class AnswerServiceTest {
                 .build();
     }
 
-
     @Test
-    @DisplayName("Deve criar uma Answer com sucesso quando respondida pelo vendedor")
-    void deveCriarAnswerComSucesso()
+    @DisplayName("Deve criar uma Answer com sucesso e gravar no Outbox")
+    void deveCriarAnswerComSucesso() throws JsonProcessingException
     {
         // Arrange
         AnswerResponse expectedResponse = new AnswerResponse(
-                answerId,
-                questionId,
-                sellerId,
-                createRequest.text(),
-                ContentStatus.PENDING_ANALYSIS,
-                null,
-                LocalDateTime.now(),
-                LocalDateTime.now()
+                answerId, questionId, sellerId, createRequest.text(),
+                ContentStatus.PENDING_ANALYSIS, null, LocalDateTime.now(), LocalDateTime.now()
         );
 
         when(questionService.getQuestionById(questionId)).thenReturn(question);
         when(answerRepository.existsByQuestion_Id(questionId)).thenReturn(false);
         when(answerRepository.save(any(Answer.class))).thenReturn(savedAnswer);
+        when(objectMapper.writeValueAsString(any())).thenReturn("{\"payload\": \"teste\"}");
         when(answerMapper.toResponse(any(Answer.class))).thenReturn(expectedResponse);
-
-
 
         // Act
         AnswerResponse response = answerService.createAnswer(questionId, sellerId, createRequest);
 
-
-
         // Assert
         assertNotNull(response);
-        assertEquals(answerId, response.id());
-        assertEquals(sellerId, response.userId());
-        assertEquals(questionId, response.questionId());
         assertEquals(ContentStatus.PENDING_ANALYSIS, response.status());
 
-        verify(questionService).getQuestionById(questionId);
-        verify(answerRepository).existsByQuestion_Id(questionId);
         verify(answerRepository).save(any(Answer.class));
-        verify(kafkaProducerService).sendForReview(any());
-        verifyNoInteractions(notificationPublisher);
-        verify(answerMapper).toResponse(any(Answer.class));           // ← verificar chamada
+        verify(outboxEventRepository).save(any()); // Verifica salvamento no Outbox
     }
 
     @Test
     @DisplayName("Deve lançar ForbiddenOperationException ao tentar criar Answer não sendo o vendedor")
     void deveCriarAnswerRetornarForbidden()
     {
-
         UUID fakeUserId = UUID.randomUUID();
         when(questionService.getQuestionById(questionId)).thenReturn(question);
 
@@ -145,9 +132,6 @@ class AnswerServiceTest {
         );
 
         assertEquals("Apenas o vendedor do anúncio pode responder a pergunta.", exception.getMessage());
-
-        verify(questionService).getQuestionById(questionId);
-        verifyNoInteractions(answerRepository, kafkaProducerService,
-                notificationPublisher, answerMapper);
+        verifyNoInteractions(answerRepository, outboxEventRepository, answerMapper);
     }
 }

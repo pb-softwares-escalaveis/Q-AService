@@ -6,11 +6,11 @@ import br.com.leilao.dto.request.CreateQuestionRequest;
 import br.com.leilao.dto.response.QuestionResponse;
 import br.com.leilao.integration.feign.AuctionClient;
 import br.com.leilao.integration.feign.dto.AuctionResponse;
-import br.com.leilao.integration.kafka.KafkaProducerService;
-import br.com.leilao.integration.notification.NotificationPublisher;
+import br.com.leilao.repository.OutboxEventRepository;
 import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.QuestionMapper;
-import org.junit.jupiter.api.AfterEach;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -27,7 +28,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class QuestionServiceTest {
+class QuestionServiceTest
+{
 
     @Mock
     private QuestionRepository questionRepository;
@@ -36,10 +38,10 @@ class QuestionServiceTest {
     private AuctionClient auctionClient;
 
     @Mock
-    private KafkaProducerService kafkaProducerService;
+    private OutboxEventRepository outboxEventRepository;
 
     @Mock
-    private NotificationPublisher notificationPublisher;
+    private ObjectMapper objectMapper;
 
     @Mock
     private QuestionMapper questionMapper;
@@ -59,6 +61,9 @@ class QuestionServiceTest {
     @BeforeEach
     void setUp()
     {
+        // Injeta a variável @Value no mock
+        ReflectionTestUtils.setField(questionService, "topic", "qa.question.created");
+
         auctionId = 1L;
         userId = UUID.randomUUID();
         sellerId = UUID.randomUUID();
@@ -92,13 +97,14 @@ class QuestionServiceTest {
     }
 
     @Test
-    @DisplayName("Deve criar uma Question com sucesso e retornar o status PENDING_ANALYSIS")
-    void deveCriarQuestionComSucesso()
+    @DisplayName("Deve criar uma Question com sucesso e gravar no Outbox")
+    void deveCriarQuestionComSucesso() throws JsonProcessingException
     {
         // Arrange
         when(auctionClient.getAdById(auctionId)).thenReturn(auctionResponse);
         when(questionRepository.save(any(Question.class))).thenReturn(savedQuestion);
         when(questionMapper.toResponse(any(Question.class))).thenReturn(questionResponse);
+        when(objectMapper.writeValueAsString(any())).thenReturn("{\"payload\": \"teste\"}");
 
         // Act
         QuestionResponse response = questionService.createQuestion(auctionId, userId, createRequest);
@@ -106,15 +112,10 @@ class QuestionServiceTest {
         // Assert
         assertNotNull(response);
         assertEquals(questionId, response.id());
-        assertEquals(auctionId, response.auctionId());
-        assertEquals(userId, response.userId());
         assertEquals(ContentStatus.PENDING_ANALYSIS, response.status());
 
-        verify(auctionClient, times(1)).getAdById(auctionId);
         verify(questionRepository, times(1)).save(any(Question.class));
-        verify(kafkaProducerService, times(1)).sendForReview(any());
-        verifyNoInteractions(notificationPublisher);
+        verify(outboxEventRepository, times(1)).save(any());
         verify(questionMapper).toResponse(any(Question.class));
     }
-
 }

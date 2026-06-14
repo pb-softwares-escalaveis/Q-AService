@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AnswerServiceTest
+class AnswerServiceTest 
 {
 
     @Mock
@@ -54,7 +54,7 @@ class AnswerServiceTest
     private UUID answerId;
     private UUID sellerId;
     private UUID buyerId;
-
+    
     private Question question;
     private CreateAnswerRequest createRequest;
     private Answer savedAnswer;
@@ -94,7 +94,7 @@ class AnswerServiceTest
 
     @Test
     @DisplayName("Deve criar uma Answer com sucesso e gravar no Outbox")
-    void deveCriarAnswerComSucesso() throws JsonProcessingException
+    void deveCriarAnswerComSucesso() throws JsonProcessingException 
     {
         // Arrange
         AnswerResponse expectedResponse = new AnswerResponse(

@@ -35,7 +35,7 @@ public class KafkaReviewConsumer {
             Question question = questionOpt.get();
             question.setStatus(ContentStatus.ACTIVE);
             questionRepository.save(question);
-
+            
             log.info("[KAFKA CONSUMER] Pergunta {} marcada como ACTIVE.", question.getId());
             return;
         }
@@ -45,7 +45,7 @@ public class KafkaReviewConsumer {
             Answer answer = answerOpt.get();
             answer.setStatus(ContentStatus.ACTIVE);
             answerRepository.save(answer);
-
+            
             log.info("[KAFKA CONSUMER] Resposta {} marcada como ACTIVE.", answer.getId());
             return;
         }
@@ -63,7 +63,7 @@ public class KafkaReviewConsumer {
         if (questionOpt.isPresent()) {
             Question question = questionOpt.get();
             question.setStatus(ContentStatus.REJECTED);
-            question.setRejectionReason(RejectionReason.OFFENSIVE);
+            question.setRejectionReason(RejectionReason.OFFENSIVE); 
             questionRepository.save(question);
             log.info("[KAFKA CONSUMER] Pergunta {} marcada como REJECTED.", question.getId());
             return;

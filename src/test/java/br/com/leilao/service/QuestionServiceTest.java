@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class QuestionServiceTest
+class QuestionServiceTest 
 {
 
     @Mock
@@ -98,7 +98,7 @@ class QuestionServiceTest
 
     @Test
     @DisplayName("Deve criar uma Question com sucesso e gravar no Outbox")
-    void deveCriarQuestionComSucesso() throws JsonProcessingException
+    void deveCriarQuestionComSucesso() throws JsonProcessingException 
     {
         // Arrange
         when(auctionClient.getAdById(auctionId)).thenReturn(auctionResponse);
@@ -115,7 +115,7 @@ class QuestionServiceTest
         assertEquals(ContentStatus.PENDING_ANALYSIS, response.status());
 
         verify(questionRepository, times(1)).save(any(Question.class));
-        verify(outboxEventRepository, times(1)).save(any());
+        verify(outboxEventRepository, times(1)).save(any()); 
         verify(questionMapper).toResponse(any(Question.class));
     }
 }

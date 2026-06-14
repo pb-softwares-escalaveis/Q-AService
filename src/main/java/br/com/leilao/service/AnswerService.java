@@ -27,17 +27,17 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class AnswerService
+public class AnswerService 
 {
 
     private final AnswerRepository answerRepository;
     private final QuestionService questionService;
-    private final OutboxEventRepository outboxEventRepository;
-    private final ObjectMapper objectMapper;
+    private final OutboxEventRepository outboxEventRepository; 
+    private final ObjectMapper objectMapper;                   
     private final AnswerMapper answerMapper;
 
     @Value("${app.kafka.topics.qa-created-pending}")
-    private String topic;
+    private String topic; 
 
     @Transactional
     @CacheEvict(value = "ad_questions", allEntries = true)

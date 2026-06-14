@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OutboxEvent
+public class OutboxEvent 
 {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

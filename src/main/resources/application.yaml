@@ -35,8 +35,8 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.add.type.headers: false
+      properties:                                    
+        spring.json.add.type.headers: false          
     consumer:
       group-id: qa-group
       auto-offset-reset: earliest
@@ -48,9 +48,9 @@ spring:
 app:
   kafka:
     topics:
-      qa-created-pending: "qa.question.created"
-      qa-review-approved: "reviews.question.approved"
-      qa-review-rejected: "reviews.question.rejected"
+      qa-created-pending: "qa.question.created"      
+      qa-review-approved: "reviews.question.approved" 
+      qa-review-rejected: "reviews.question.rejected" 
     redis:
       time-to-live: 60m
 
@@ -81,10 +81,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, circuitbreakers, prometheus
-  tracing:
+        include: health, info, circuitbreakers, prometheus  
+  tracing:                                                  
     sampling:
-      probability: 1.0
+      probability: 1.0                                      
   health:
     circuitbreakers:
       enabled: true

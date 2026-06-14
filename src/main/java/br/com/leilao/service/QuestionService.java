@@ -31,17 +31,17 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class QuestionService
+public class QuestionService 
 {
 
     private final QuestionRepository questionRepository;
     private final AuctionClient auctionClient;
-    private final OutboxEventRepository outboxEventRepository;
-    private final ObjectMapper objectMapper;
+    private final OutboxEventRepository outboxEventRepository; 
+    private final ObjectMapper objectMapper;                  
     private final QuestionMapper questionMapper;
 
     @Value("${app.kafka.topics.qa-created-pending}")
-    private String topic;
+    private String topic; 
 
     @Transactional
     @CacheEvict(value = "ad_questions", allEntries = true)
@@ -70,18 +70,18 @@ public class QuestionService
                 UUID.randomUUID()
         );
 
-        try
+        try 
         {
-
+         
             String payloadJson = objectMapper.writeValueAsString(event);
-
+            
             OutboxEvent outboxEvent = OutboxEvent.builder()
                     .topic(topic)
                     .payload(payloadJson)
                     .build();
-
+            
             outboxEventRepository.save(outboxEvent);
-
+            
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Erro ao serializar evento para o Outbox", e);
         }

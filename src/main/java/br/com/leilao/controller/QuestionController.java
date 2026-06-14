@@ -26,16 +26,17 @@ public class QuestionController
     @PostMapping("/auctions/{auctionId}/questions")
     public ResponseEntity<QuestionResponse> createQuestion(
             @PathVariable Long auctionId,
-            @RequestParam UUID userId,
+            @RequestHeader("X-User-Id") UUID userId,
+            @RequestHeader("X-User-Allowed") boolean allowed,
             @Valid @RequestBody CreateQuestionRequest request) {
-        QuestionResponse response = questionService.createQuestion(auctionId, userId, request);
+        QuestionResponse response = questionService.createQuestion(auctionId, userId, allowed, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @DeleteMapping("/questions/{questionId}")
     public ResponseEntity<Void> deleteQuestion(
             @PathVariable Long questionId,
-            @RequestParam UUID userId) {
+            @RequestHeader("X-User-Id") UUID userId) {
         questionService.deleteQuestion(questionId, userId);
         return ResponseEntity.noContent().build();
     }

@@ -6,9 +6,9 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "auction-service", fallbackFactory = AuctionClientFallbackFactory.class)
-@Retry(name = "auction-service")
+@FeignClient(name = "auctionService", fallbackFactory = AuctionClientFallbackFactory.class)
+@Retry(name = "auctionService")
 public interface AuctionClient {
-    @GetMapping("/api/auctions/{auctionId}")
+    @GetMapping("/auctions/{auctionId}")
     AuctionResponse getAdById(@PathVariable("auctionId") Long auctionId);
 }

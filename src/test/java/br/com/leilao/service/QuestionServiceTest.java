@@ -101,7 +101,7 @@ class QuestionServiceTest
         when(questionMapper.toResponse(any(Question.class))).thenReturn(questionResponse);
 
         // Act
-        QuestionResponse response = questionService.createQuestion(auctionId, userId, createRequest);
+        QuestionResponse response = questionService.createQuestion(auctionId, userId, true, createRequest);
 
         // Assert
         assertNotNull(response);
@@ -111,5 +111,17 @@ class QuestionServiceTest
         verify(questionRepository).save(any(Question.class));
         verify(outboxEventPublisher).publish(eq("qa.created-pending"), any());
         verify(questionMapper).toResponse(any(Question.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar ForbiddenOperationException ao criar Question com usuário não autorizado")
+    void deveBloquearQuestionUsuarioNaoAutorizado()
+    {
+        assertThrows(
+                br.com.leilao.exception.ForbiddenOperationException.class,
+                () -> questionService.createQuestion(auctionId, userId, false, createRequest)
+        );
+
+        verifyNoInteractions(auctionClient, questionRepository, outboxEventPublisher, questionMapper);
     }
 }

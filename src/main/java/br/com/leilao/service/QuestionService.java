@@ -41,8 +41,12 @@ public class QuestionService
 
     @Transactional
     @CacheEvict(value = "ad_questions", allEntries = true)
-    public QuestionResponse createQuestion(Long auctionId, UUID userId, CreateQuestionRequest request)
+    public QuestionResponse createQuestion(Long auctionId, UUID userId, boolean allowed, CreateQuestionRequest request)
     {
+        if (!allowed) {
+            throw new ForbiddenOperationException("Usuário não autorizado a realizar esta operação (conta restrita).");
+        }
+
         AuctionResponse auctionResponse = auctionClient.getAdById(auctionId);
 
         Question question = Question.builder()

@@ -22,9 +22,10 @@ public class AnswerController
     @PostMapping("/questions/{questionId}/answers")
     public ResponseEntity<AnswerResponse> createAnswer(
             @PathVariable Long questionId,
-            @RequestParam UUID userId,
+            @RequestHeader("X-User-Id") UUID userId,
+            @RequestHeader("X-User-Allowed") boolean allowed,
             @Valid @RequestBody CreateAnswerRequest request) {
-        AnswerResponse response = answerService.createAnswer(questionId, userId, request);
+        AnswerResponse response = answerService.createAnswer(questionId, userId, allowed, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -32,7 +33,7 @@ public class AnswerController
     public ResponseEntity<Void> deleteAnswer(
             @PathVariable Long questionId,
             @PathVariable Long answerId,
-            @RequestParam UUID userId) {
+            @RequestHeader("X-User-Id") UUID userId) {
         answerService.deleteAnswer(questionId, answerId, userId);
         return ResponseEntity.noContent().build();
     }

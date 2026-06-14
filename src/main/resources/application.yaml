@@ -1,6 +1,6 @@
 spring:
   application:
-    name: q&a-service
+    name: QA-SERVICE
 
   datasource:
     url: jdbc:postgresql://localhost:5432/qa_service_db
@@ -39,16 +39,23 @@ spring:
       group-id: qa-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 app:
   kafka:
     topics:
+      # publisher: Q&A -> Review
       qa-created-pending: "qa.created-pending"
-      qa-review-approved: "qa.review.approved"
-      qa-review-rejected: "qa.review.rejected"
+
+      # consumer: Review -> Q&A (nomes emitidos pelo Review Service)
+      qa-review-approved: "reviews.qa.approved"
+      qa-review-rejected: "reviews.qa.rejected"
+
+      # publisher: Q&A -> Notification (via Outbox)
+      notify-question-approved: "qa.question.approved"
+      notify-answer-approved: "qa.answer.approved"
+      notify-question-rejected: "qa.question.rejected"
+      notify-answer-rejected: "qa.answer.rejected"
     redis:
       time-to-live: 60m
 
@@ -56,8 +63,7 @@ app:
     openfeign:
       client:
         config:
-          ad-service:
-            url: http://localhost:8081  # remover quando Eureka estiver ativo
+          auctionService:
             connectTimeout: 2000
             readTimeout: 2000
             loggerLevel: BASIC
@@ -69,7 +75,7 @@ server:
 
 eureka:
   client:
-    enabled: false
+    enabled: true
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
   instance:
@@ -90,7 +96,7 @@ management:
 resilience4j:
   circuitbreaker:
     instances:
-      ad-service:
+      auctionService:
         registerHealthIndicator: true
         slidingWindowSize: 10
         failureRateThreshold: 50
@@ -99,7 +105,7 @@ resilience4j:
         automaticTransitionFromOpenToHalfOpenEnabled: true
   retry:
     instances:
-      ad-service:
+      auctionService:
         maxAttempts: 3
         waitDuration: 2s
 

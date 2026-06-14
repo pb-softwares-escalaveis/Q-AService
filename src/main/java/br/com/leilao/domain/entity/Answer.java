@@ -19,7 +19,8 @@ import java.util.UUID;
 public class Answer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "qa_content_seq")
+    @SequenceGenerator(name = "qa_content_seq", sequenceName = "qa_content_id_seq", allocationSize = 1)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)

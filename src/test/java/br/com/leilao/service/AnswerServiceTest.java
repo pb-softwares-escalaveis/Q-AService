@@ -104,7 +104,7 @@ class AnswerServiceTest
         when(answerMapper.toResponse(any(Answer.class))).thenReturn(expectedResponse);
 
         // Act
-        AnswerResponse response = answerService.createAnswer(questionId, sellerId, createRequest);
+        AnswerResponse response = answerService.createAnswer(questionId, sellerId, true, createRequest);
 
         // Assert
         assertNotNull(response);
@@ -123,10 +123,22 @@ class AnswerServiceTest
 
         ForbiddenOperationException exception = assertThrows(
                 ForbiddenOperationException.class,
-                () -> answerService.createAnswer(questionId, fakeUserId, createRequest)
+                () -> answerService.createAnswer(questionId, fakeUserId, true, createRequest)
         );
 
         assertEquals("Apenas o vendedor do anúncio pode responder a pergunta.", exception.getMessage());
         verifyNoInteractions(answerRepository, outboxEventPublisher, answerMapper);
+    }
+
+    @Test
+    @DisplayName("Deve lançar ForbiddenOperationException ao criar Answer com usuário não autorizado")
+    void deveBloquearAnswerUsuarioNaoAutorizado()
+    {
+        assertThrows(
+                ForbiddenOperationException.class,
+                () -> answerService.createAnswer(questionId, sellerId, false, createRequest)
+        );
+
+        verifyNoInteractions(questionService, answerRepository, outboxEventPublisher, answerMapper);
     }
 }

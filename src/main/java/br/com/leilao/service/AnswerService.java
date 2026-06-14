@@ -37,8 +37,12 @@ public class AnswerService
 
     @Transactional
     @CacheEvict(value = "ad_questions", allEntries = true)
-    public AnswerResponse createAnswer(Long questionId, UUID userId, CreateAnswerRequest request)
+    public AnswerResponse createAnswer(Long questionId, UUID userId, boolean allowed, CreateAnswerRequest request)
     {
+        if (!allowed) {
+            throw new ForbiddenOperationException("Usuário não autorizado a realizar esta operação (conta restrita).");
+        }
+
         Question question = questionService.getQuestionById(questionId);
 
         if (!question.getSellerId().equals(userId)) {

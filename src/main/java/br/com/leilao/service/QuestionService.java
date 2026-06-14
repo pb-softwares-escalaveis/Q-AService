@@ -1,6 +1,5 @@
 package br.com.leilao.service;
 
-import br.com.leilao.domain.entity.OutboxEvent;
 import br.com.leilao.domain.entity.Question;
 import br.com.leilao.domain.enums.ContentStatus;
 import br.com.leilao.dto.request.CreateQuestionRequest;
@@ -10,12 +9,10 @@ import br.com.leilao.exception.InvalidOperationException;
 import br.com.leilao.exception.ResourceNotFoundException;
 import br.com.leilao.integration.feign.AuctionClient;
 import br.com.leilao.integration.feign.dto.AuctionResponse;
+import br.com.leilao.integration.kafka.OutboxEventPublisher;
 import br.com.leilao.integration.kafka.events.MessageCreatedPendingReview;
-import br.com.leilao.repository.OutboxEventRepository;
 import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.QuestionMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
@@ -31,13 +28,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class QuestionService 
+public class QuestionService
 {
 
     private final QuestionRepository questionRepository;
     private final AuctionClient auctionClient;
-    private final OutboxEventRepository outboxEventRepository; 
-    private final ObjectMapper objectMapper;                  
+    private final OutboxEventPublisher outboxEventPublisher;
     private final QuestionMapper questionMapper;
 
     @Value("${app.kafka.topics.qa-created-pending}")
@@ -70,21 +66,7 @@ public class QuestionService
                 UUID.randomUUID()
         );
 
-        try 
-        {
-         
-            String payloadJson = objectMapper.writeValueAsString(event);
-            
-            OutboxEvent outboxEvent = OutboxEvent.builder()
-                    .topic(topic)
-                    .payload(payloadJson)
-                    .build();
-            
-            outboxEventRepository.save(outboxEvent);
-            
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Erro ao serializar evento para o Outbox", e);
-        }
+        outboxEventPublisher.publish(topic, event);
 
         return questionMapper.toResponse(question);
     }

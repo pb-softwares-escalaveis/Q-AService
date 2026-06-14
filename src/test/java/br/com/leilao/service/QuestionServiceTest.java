@@ -6,11 +6,9 @@ import br.com.leilao.dto.request.CreateQuestionRequest;
 import br.com.leilao.dto.response.QuestionResponse;
 import br.com.leilao.integration.feign.AuctionClient;
 import br.com.leilao.integration.feign.dto.AuctionResponse;
-import br.com.leilao.repository.OutboxEventRepository;
+import br.com.leilao.integration.kafka.OutboxEventPublisher;
 import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.QuestionMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,10 +23,11 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class QuestionServiceTest 
+class QuestionServiceTest
 {
 
     @Mock
@@ -38,10 +37,7 @@ class QuestionServiceTest
     private AuctionClient auctionClient;
 
     @Mock
-    private OutboxEventRepository outboxEventRepository;
-
-    @Mock
-    private ObjectMapper objectMapper;
+    private OutboxEventPublisher outboxEventPublisher;
 
     @Mock
     private QuestionMapper questionMapper;
@@ -61,7 +57,6 @@ class QuestionServiceTest
     @BeforeEach
     void setUp()
     {
-        // Injeta a variável @Value no mock
         ReflectionTestUtils.setField(questionService, "topic", "qa.created-pending");
 
         auctionId = 1L;
@@ -97,14 +92,13 @@ class QuestionServiceTest
     }
 
     @Test
-    @DisplayName("Deve criar uma Question com sucesso e gravar no Outbox")
-    void deveCriarQuestionComSucesso() throws JsonProcessingException 
+    @DisplayName("Deve criar uma Question com sucesso e publicar no Outbox")
+    void deveCriarQuestionComSucesso()
     {
         // Arrange
         when(auctionClient.getAdById(auctionId)).thenReturn(auctionResponse);
         when(questionRepository.save(any(Question.class))).thenReturn(savedQuestion);
         when(questionMapper.toResponse(any(Question.class))).thenReturn(questionResponse);
-        when(objectMapper.writeValueAsString(any())).thenReturn("{\"payload\": \"teste\"}");
 
         // Act
         QuestionResponse response = questionService.createQuestion(auctionId, userId, createRequest);
@@ -114,8 +108,8 @@ class QuestionServiceTest
         assertEquals(questionId, response.id());
         assertEquals(ContentStatus.PENDING_ANALYSIS, response.status());
 
-        verify(questionRepository, times(1)).save(any(Question.class));
-        verify(outboxEventRepository, times(1)).save(any()); 
+        verify(questionRepository).save(any(Question.class));
+        verify(outboxEventPublisher).publish(eq("qa.created-pending"), any());
         verify(questionMapper).toResponse(any(Question.class));
     }
 }

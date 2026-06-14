@@ -6,11 +6,9 @@ import br.com.leilao.domain.enums.ContentStatus;
 import br.com.leilao.dto.request.CreateAnswerRequest;
 import br.com.leilao.dto.response.AnswerResponse;
 import br.com.leilao.exception.ForbiddenOperationException;
+import br.com.leilao.integration.kafka.OutboxEventPublisher;
 import br.com.leilao.repository.AnswerRepository;
-import br.com.leilao.repository.OutboxEventRepository;
 import br.com.leilao.service.mapper.AnswerMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,10 +23,11 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AnswerServiceTest 
+class AnswerServiceTest
 {
 
     @Mock
@@ -38,10 +37,7 @@ class AnswerServiceTest
     private QuestionService questionService;
 
     @Mock
-    private OutboxEventRepository outboxEventRepository;
-
-    @Mock
-    private ObjectMapper objectMapper;
+    private OutboxEventPublisher outboxEventPublisher;
 
     @Mock
     private AnswerMapper answerMapper;
@@ -54,7 +50,7 @@ class AnswerServiceTest
     private Long answerId;
     private UUID sellerId;
     private UUID buyerId;
-    
+
     private Question question;
     private CreateAnswerRequest createRequest;
     private Answer savedAnswer;
@@ -93,8 +89,8 @@ class AnswerServiceTest
     }
 
     @Test
-    @DisplayName("Deve criar uma Answer com sucesso e gravar no Outbox")
-    void deveCriarAnswerComSucesso() throws JsonProcessingException 
+    @DisplayName("Deve criar uma Answer com sucesso e publicar no Outbox")
+    void deveCriarAnswerComSucesso()
     {
         // Arrange
         AnswerResponse expectedResponse = new AnswerResponse(
@@ -105,7 +101,6 @@ class AnswerServiceTest
         when(questionService.getQuestionById(questionId)).thenReturn(question);
         when(answerRepository.existsByQuestion_Id(questionId)).thenReturn(false);
         when(answerRepository.save(any(Answer.class))).thenReturn(savedAnswer);
-        when(objectMapper.writeValueAsString(any())).thenReturn("{\"payload\": \"teste\"}");
         when(answerMapper.toResponse(any(Answer.class))).thenReturn(expectedResponse);
 
         // Act
@@ -116,7 +111,7 @@ class AnswerServiceTest
         assertEquals(ContentStatus.PENDING_ANALYSIS, response.status());
 
         verify(answerRepository).save(any(Answer.class));
-        verify(outboxEventRepository).save(any()); // Verifica salvamento no Outbox
+        verify(outboxEventPublisher).publish(eq("qa.created-pending"), any());
     }
 
     @Test
@@ -132,6 +127,6 @@ class AnswerServiceTest
         );
 
         assertEquals("Apenas o vendedor do anúncio pode responder a pergunta.", exception.getMessage());
-        verifyNoInteractions(answerRepository, outboxEventRepository, answerMapper);
+        verifyNoInteractions(answerRepository, outboxEventPublisher, answerMapper);
     }
 }

@@ -6,6 +6,8 @@ import br.com.leilao.domain.enums.ContentStatus;
 import br.com.leilao.dto.request.CreateAnswerRequest;
 import br.com.leilao.dto.response.AnswerResponse;
 import br.com.leilao.exception.ForbiddenOperationException;
+import br.com.leilao.integration.feign.UserClient;
+import br.com.leilao.integration.feign.dto.UserResponse;
 import br.com.leilao.integration.kafka.OutboxEventPublisher;
 import br.com.leilao.repository.AnswerRepository;
 import br.com.leilao.service.mapper.AnswerMapper;
@@ -37,6 +39,9 @@ class AnswerServiceTest
     private QuestionService questionService;
 
     @Mock
+    private UserClient userClient;
+
+    @Mock
     private OutboxEventPublisher outboxEventPublisher;
 
     @Mock
@@ -58,7 +63,7 @@ class AnswerServiceTest
     @BeforeEach
     void setUp()
     {
-        ReflectionTestUtils.setField(answerService, "topic", "qa.created-pending");
+        ReflectionTestUtils.setField(answerService, "topic", "qa.review.created-pending");
 
         auctionId = 1L;
         questionId = 100L;
@@ -100,6 +105,7 @@ class AnswerServiceTest
 
         when(questionService.getQuestionById(questionId)).thenReturn(question);
         when(answerRepository.existsByQuestion_Id(questionId)).thenReturn(false);
+        when(userClient.getUserById(sellerId)).thenReturn(new UserResponse("Vendedor", "vendedor@test.com"));
         when(answerRepository.save(any(Answer.class))).thenReturn(savedAnswer);
         when(answerMapper.toResponse(any(Answer.class))).thenReturn(expectedResponse);
 
@@ -111,7 +117,8 @@ class AnswerServiceTest
         assertEquals(ContentStatus.PENDING_ANALYSIS, response.status());
 
         verify(answerRepository).save(any(Answer.class));
-        verify(outboxEventPublisher).publish(eq("qa.created-pending"), any());
+        verify(userClient).getUserById(sellerId);
+        verify(outboxEventPublisher).publish(eq("qa.review.created-pending"), any());
     }
 
     @Test
@@ -127,7 +134,7 @@ class AnswerServiceTest
         );
 
         assertEquals("Apenas o vendedor do anúncio pode responder a pergunta.", exception.getMessage());
-        verifyNoInteractions(answerRepository, outboxEventPublisher, answerMapper);
+        verifyNoInteractions(answerRepository, userClient, outboxEventPublisher, answerMapper);
     }
 
     @Test
@@ -139,6 +146,6 @@ class AnswerServiceTest
                 () -> answerService.createAnswer(questionId, sellerId, false, createRequest)
         );
 
-        verifyNoInteractions(questionService, answerRepository, outboxEventPublisher, answerMapper);
+        verifyNoInteractions(questionService, answerRepository, userClient, outboxEventPublisher, answerMapper);
     }
 }

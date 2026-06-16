@@ -1,0 +1,44 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+  cache:
+    type: none
+
+  # Substitui Eureka por um discovery estático que aponta auctionService/user-service
+  # para o WireMock (porta injetada pelo @AutoConfigureWireMock como `wiremock.server.port`).
+  # Sem isto, com Eureka desligado o Feign não tem para onde ir e a chamada falha antes
+  # de chegar no WireMock — o CB nunca vê falhas reais e não abre.
+  cloud:
+    discovery:
+      client:
+        simple:
+          instances:
+            auctionService:
+              - service-id: auctionService
+                host: localhost
+                port: ${wiremock.server.port}
+            user-service:
+              - service-id: user-service
+                host: localhost
+                port: ${wiremock.server.port}
+
+eureka:
+  client:
+    enabled: false
+
+resilience4j:
+  retry:
+    instances:
+      auctionService:
+        maxAttempts: 1
+        waitDuration: 10ms
+      user-service:
+        maxAttempts: 1
+        waitDuration: 10ms

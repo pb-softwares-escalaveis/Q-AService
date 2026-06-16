@@ -9,12 +9,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import java.time.LocalDateTime;
 
 @Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler
+{
 
     @ExceptionHandler(AuctionServiceUnavailableException.class)
     public ResponseEntity<ErrorResponse> handleAuctionServiceUnavailable(AuctionServiceUnavailableException ex, HttpServletRequest request) {

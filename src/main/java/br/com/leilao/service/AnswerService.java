@@ -9,6 +9,8 @@ import br.com.leilao.exception.AnswerAlreadyExistsException;
 import br.com.leilao.exception.ForbiddenOperationException;
 import br.com.leilao.exception.InvalidOperationException;
 import br.com.leilao.exception.ResourceNotFoundException;
+import br.com.leilao.integration.feign.UserClient;
+import br.com.leilao.integration.feign.dto.UserResponse;
 import br.com.leilao.integration.kafka.OutboxEventPublisher;
 import br.com.leilao.integration.kafka.events.MessageCreatedPendingReview;
 import br.com.leilao.repository.AnswerRepository;
@@ -29,11 +31,12 @@ public class AnswerService
 
     private final AnswerRepository answerRepository;
     private final QuestionService questionService;
+    private final UserClient userClient;
     private final OutboxEventPublisher outboxEventPublisher;
     private final AnswerMapper answerMapper;
 
-    @Value("${app.kafka.topics.qa-created-pending}")
-    private String topic; 
+    @Value("${app.kafka.topics.qa-review-created-pending}")
+    private String topic;
 
     @Transactional
     @CacheEvict(value = "ad_questions", allEntries = true)
@@ -66,12 +69,14 @@ public class AnswerService
 
         answer = answerRepository.save(answer);
 
+        UserResponse seller = userClient.getUserById(userId);
+
         MessageCreatedPendingReview event = new MessageCreatedPendingReview(
                 question.getAuctionId(),
                 userId,
                 answer.getId(),
-                "Seller Name Placeholder", // TODO: No futuro, obter detalhes do vendedor
-                "seller@email.com",         // TODO: No futuro, obter detalhes do vendedor
+                seller.nome(),
+                seller.email(),
                 answer.getText(),
                 Instant.now(),
                 UUID.randomUUID()

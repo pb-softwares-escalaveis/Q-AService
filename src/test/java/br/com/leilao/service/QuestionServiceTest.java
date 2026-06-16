@@ -5,7 +5,9 @@ import br.com.leilao.domain.enums.ContentStatus;
 import br.com.leilao.dto.request.CreateQuestionRequest;
 import br.com.leilao.dto.response.QuestionResponse;
 import br.com.leilao.integration.feign.AuctionClient;
+import br.com.leilao.integration.feign.UserClient;
 import br.com.leilao.integration.feign.dto.AuctionResponse;
+import br.com.leilao.integration.feign.dto.UserResponse;
 import br.com.leilao.integration.kafka.OutboxEventPublisher;
 import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.QuestionMapper;
@@ -37,6 +39,9 @@ class QuestionServiceTest
     private AuctionClient auctionClient;
 
     @Mock
+    private UserClient userClient;
+
+    @Mock
     private OutboxEventPublisher outboxEventPublisher;
 
     @Mock
@@ -57,7 +62,7 @@ class QuestionServiceTest
     @BeforeEach
     void setUp()
     {
-        ReflectionTestUtils.setField(questionService, "topic", "qa.created-pending");
+        ReflectionTestUtils.setField(questionService, "topic", "qa.review.created-pending");
 
         auctionId = 1L;
         userId = UUID.randomUUID();
@@ -96,7 +101,8 @@ class QuestionServiceTest
     void deveCriarQuestionComSucesso()
     {
         // Arrange
-        when(auctionClient.getAdById(auctionId)).thenReturn(auctionResponse);
+        when(auctionClient.getAuctionById(auctionId)).thenReturn(auctionResponse);
+        when(userClient.getUserById(sellerId)).thenReturn(new UserResponse("Vendedor", "vendedor@test.com"));
         when(questionRepository.save(any(Question.class))).thenReturn(savedQuestion);
         when(questionMapper.toResponse(any(Question.class))).thenReturn(questionResponse);
 
@@ -109,7 +115,8 @@ class QuestionServiceTest
         assertEquals(ContentStatus.PENDING_ANALYSIS, response.status());
 
         verify(questionRepository).save(any(Question.class));
-        verify(outboxEventPublisher).publish(eq("qa.created-pending"), any());
+        verify(userClient).getUserById(sellerId);
+        verify(outboxEventPublisher).publish(eq("qa.review.created-pending"), any());
         verify(questionMapper).toResponse(any(Question.class));
     }
 
@@ -122,6 +129,6 @@ class QuestionServiceTest
                 () -> questionService.createQuestion(auctionId, userId, false, createRequest)
         );
 
-        verifyNoInteractions(auctionClient, questionRepository, outboxEventPublisher, questionMapper);
+        verifyNoInteractions(auctionClient, userClient, questionRepository, outboxEventPublisher, questionMapper);
     }
 }

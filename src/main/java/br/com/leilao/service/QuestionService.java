@@ -8,7 +8,9 @@ import br.com.leilao.exception.ForbiddenOperationException;
 import br.com.leilao.exception.InvalidOperationException;
 import br.com.leilao.exception.ResourceNotFoundException;
 import br.com.leilao.integration.feign.AuctionClient;
+import br.com.leilao.integration.feign.UserClient;
 import br.com.leilao.integration.feign.dto.AuctionResponse;
+import br.com.leilao.integration.feign.dto.UserResponse;
 import br.com.leilao.integration.kafka.OutboxEventPublisher;
 import br.com.leilao.integration.kafka.events.MessageCreatedPendingReview;
 import br.com.leilao.repository.QuestionRepository;
@@ -33,11 +35,12 @@ public class QuestionService
 
     private final QuestionRepository questionRepository;
     private final AuctionClient auctionClient;
+    private final UserClient userClient;
     private final OutboxEventPublisher outboxEventPublisher;
     private final QuestionMapper questionMapper;
 
-    @Value("${app.kafka.topics.qa-created-pending}")
-    private String topic; 
+    @Value("${app.kafka.topics.qa-review-created-pending}")
+    private String topic;
 
     @Transactional
     @CacheEvict(value = "ad_questions", allEntries = true)
@@ -47,7 +50,7 @@ public class QuestionService
             throw new ForbiddenOperationException("Usuário não autorizado a realizar esta operação (conta restrita).");
         }
 
-        AuctionResponse auctionResponse = auctionClient.getAdById(auctionId);
+        AuctionResponse auctionResponse = auctionClient.getAuctionById(auctionId);
 
         Question question = Question.builder()
                 .auctionId(auctionId)
@@ -59,12 +62,14 @@ public class QuestionService
 
         question = questionRepository.save(question);
 
+        UserResponse seller = userClient.getUserById(question.getSellerId());
+
         MessageCreatedPendingReview event = new MessageCreatedPendingReview(
                 auctionId,
                 question.getSellerId(),
                 question.getId(),
-                "Seller Name Placeholder", // TODO: No futuro, obter detalhes do vendedor
-                "seller@email.com",         // TODO: No futuro, obter detalhes do vendedor
+                seller.nome(),
+                seller.email(),
                 question.getText(),
                 Instant.now(),
                 UUID.randomUUID()

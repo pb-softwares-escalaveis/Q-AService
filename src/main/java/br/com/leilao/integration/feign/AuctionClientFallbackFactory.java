@@ -14,7 +14,7 @@ public class AuctionClientFallbackFactory implements FallbackFactory<AuctionClie
     public AuctionClient create(Throwable cause) {
         return new AuctionClient() {
             @Override
-            public AuctionResponse getAdById(Long auctionId) {
+            public AuctionResponse getAuctionById (Long auctionId) {
                 log.error("Erro ao buscar o anúncio {}: {}", auctionId, cause.getMessage());
                 throw new AuctionServiceUnavailableException("O serviço de leilões está temporariamente indisponível.", cause);
             }

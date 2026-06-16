@@ -10,5 +10,5 @@ import org.springframework.web.bind.annotation.PathVariable;
 @Retry(name = "auctionService")
 public interface AuctionClient {
     @GetMapping("/auctions/{auctionId}")
-    AuctionResponse getAdById(@PathVariable("auctionId") Long auctionId);
+    AuctionResponse getAuctionById(@PathVariable("auctionId") Long auctionId);
 }

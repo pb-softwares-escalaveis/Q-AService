@@ -11,9 +11,7 @@ spring:
       hibernate:
         format_sql: true
 
-  flyway:
-    clean-on-validation-error: true
-
+  # Para resetar o banco local: `docker compose -f compose/docker-compose.yml down -v && up -d`.
   data:
     redis:
       host: localhost

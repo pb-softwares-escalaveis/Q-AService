@@ -11,8 +11,7 @@ spring:
       hibernate:
         format_sql: false
 
-  flyway:
-    clean-on-validation-error: false
+  # Para reparar checksums em prod (raro), use `./mvnw flyway:repair`
 
   data:
     redis:

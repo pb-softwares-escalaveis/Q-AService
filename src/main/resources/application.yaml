@@ -3,7 +3,7 @@ spring:
     name: QA-SERVICE
 
   profiles:
-    active: dev
+    active: prod
 
   jpa:
     hibernate:
@@ -40,10 +40,6 @@ spring:
             loggerLevel: BASIC
       circuitbreaker:
         enabled: true
-        # group.enabled=true faz o CB ter o nome do Feign client (auctionService/user-service)
-        # em vez do nome derivado de método (AuctionClientgetAuctionByIdLong). Sem isso, nossa
-        # config `resilience4j.circuitbreaker.instances.auctionService` NUNCA é aplicada — o CB
-        # usa os defaults do Resilience4j (minimumNumberOfCalls=100), e nunca abre na prática.
         group:
           enabled: true
 

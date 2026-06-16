@@ -7,12 +7,19 @@ import io.github.resilience4j.core.registry.EntryReplacedEvent;
 import io.github.resilience4j.core.registry.RegistryEventConsumer;
 import io.github.resilience4j.retry.Retry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.openfeign.CircuitBreakerNameResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
-public class Resilience4jConfig {
+public class Resilience4jConfig
+{
+
+    @Bean
+    public CircuitBreakerNameResolver feignCircuitBreakerNameResolver() {
+        return (feignClientName, target, method) -> feignClientName;
+    }
 
     @Bean
     public RegistryEventConsumer<CircuitBreaker> circuitBreakerEventConsumer()

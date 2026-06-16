@@ -25,11 +25,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-// Sem `properties = ...`: o roteamento auctionService -> WireMock é feito via
-// `spring.cloud.discovery.client.simple.instances` em application-test.yaml.
+
 @AutoConfigureWireMock(port = 0)
 @ActiveProfiles("test") //reduz o retry para 1 tentativa
-class AuctionClientCircuitBreakerTest {
+class AuctionClientCircuitBreakerTest
+{
     @Autowired
     private AuctionClient auctionClient;
 

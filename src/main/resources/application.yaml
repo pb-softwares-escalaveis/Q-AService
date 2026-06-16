@@ -40,8 +40,6 @@ spring:
             loggerLevel: BASIC
       circuitbreaker:
         enabled: true
-        group:
-          enabled: true
 
   cache:
     type: redis
@@ -87,6 +85,7 @@ resilience4j:
       auctionService:
         registerHealthIndicator: true
         slidingWindowSize: 10
+        minimumNumberOfCalls: 5
         failureRateThreshold: 50
         waitDurationInOpenState: 15s
         permittedNumberOfCallsInHalfOpenState: 3
@@ -94,6 +93,7 @@ resilience4j:
       user-service:
         registerHealthIndicator: true
         slidingWindowSize: 10
+        minimumNumberOfCalls: 5
         failureRateThreshold: 50
         waitDurationInOpenState: 15s
         permittedNumberOfCallsInHalfOpenState: 3

@@ -1,5 +1,7 @@
 package br.com.leilao.integration.kafka.events;
 
+import br.com.leilao.domain.entity.Answer;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -7,7 +9,7 @@ import java.util.UUID;
  * Evento publicado pelo Q&A Service para o Notification Service quando uma resposta
  * é aprovada e fica visível (ACTIVE). Notifica o COMPRADOR que fez a pergunta.
  * Tópico: "qa.answer.approved".
- *{@code recipientId} é o id do destinatário (autor da pergunta). O Notification
+ * {@code recipientId} é o id do destinatário (autor da pergunta). O Notification
  * Service resolve o e-mail pela própria projeção de usuários.
  */
 public record AnswerApprovedNotification(
@@ -19,4 +21,18 @@ public record AnswerApprovedNotification(
         String answerText,
         Instant occurredAt,
         UUID correlationId
-) {}
+) {
+    public static AnswerApprovedNotification forBuyerOf(Answer answer, UUID correlationId) {
+        var question = answer.getQuestion();
+        return new AnswerApprovedNotification(
+                question.getAuthorId(),
+                question.getAuctionId(),
+                question.getId(),
+                answer.getId(),
+                question.getText(),
+                answer.getText(),
+                Instant.now(),
+                correlationId
+        );
+    }
+}

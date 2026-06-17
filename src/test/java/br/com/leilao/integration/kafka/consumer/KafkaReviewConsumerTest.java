@@ -76,7 +76,7 @@ class KafkaReviewConsumerTest {
                 .id(questionId)
                 .auctionId(auctionId)
                 .sellerId(sellerId)
-                .userId(buyerId)
+                .authorId(buyerId)
                 .text("O produto é original?")
                 .status(ContentStatus.PENDING_ANALYSIS)
                 .build();
@@ -84,7 +84,7 @@ class KafkaReviewConsumerTest {
         answer = Answer.builder()
                 .id(answerId)
                 .question(question)
-                .userId(sellerId)
+                .authorId(sellerId)
                 .text("Sim, com nota fiscal.")
                 .status(ContentStatus.PENDING_ANALYSIS)
                 .build();

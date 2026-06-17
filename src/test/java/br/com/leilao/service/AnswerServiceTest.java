@@ -77,7 +77,7 @@ class AnswerServiceTest
                 .id(questionId)
                 .auctionId(auctionId)
                 .sellerId(sellerId)
-                .userId(buyerId)
+                .authorId(buyerId)
                 .text("Pergunta?")
                 .status(ContentStatus.ACTIVE)
                 .build();
@@ -85,7 +85,7 @@ class AnswerServiceTest
         savedAnswer = Answer.builder()
                 .id(answerId)
                 .question(question)
-                .userId(sellerId)
+                .authorId(sellerId)
                 .text(createRequest.text())
                 .status(ContentStatus.PENDING_ANALYSIS)
                 .createdAt(LocalDateTime.now())

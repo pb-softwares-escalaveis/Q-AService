@@ -30,7 +30,7 @@ public class Question {
     private UUID sellerId;
 
     @Column(nullable = false)
-    private UUID userId;
+    private UUID authorId;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String text;

@@ -28,7 +28,7 @@ public class Answer {
     private Question question;
 
     @Column(nullable = false)
-    private UUID userId;
+    private UUID authorId;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String text;

@@ -21,7 +21,7 @@ public class AnswerMapper
         return new AnswerResponse(
                 a.getId(),
                 a.getQuestion().getId(),
-                a.getUserId(),
+                a.getAuthorId(),
                 a.getText(),
                 a.getStatus(),
                 a.getRejectionReason(),

@@ -55,7 +55,7 @@ public class QuestionService
         Question question = Question.builder()
                 .auctionId(auctionId)
                 .sellerId(auctionResponse.sellerId())
-                .userId(userId)
+                .authorId(userId)
                 .text(request.text())
                 .status(ContentStatus.PENDING_ANALYSIS)
                 .build();
@@ -86,7 +86,7 @@ public class QuestionService
     {
         Question question = getQuestionById(questionId);
 
-        if (!question.getUserId().equals(userId)) {
+        if (!question.getAuthorId().equals(userId)) {
             throw new ForbiddenOperationException("Você não tem permissão para excluir esta pergunta.");
         }
 

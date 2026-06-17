@@ -15,7 +15,7 @@ public class QuestionMapper {
         return new QuestionResponse(
                 q.getId(),
                 q.getAuctionId(),
-                q.getUserId(),
+                q.getAuthorId(),
                 q.getText(),
                 q.getStatus(),
                 q.getRejectionReason(),

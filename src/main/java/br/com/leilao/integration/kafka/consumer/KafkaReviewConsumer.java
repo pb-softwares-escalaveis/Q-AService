@@ -19,9 +19,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -50,7 +48,6 @@ public class KafkaReviewConsumer {
     @KafkaListener(topics = "${app.kafka.topics.qa-review-approved}", groupId = "qa-group")
     public void consumeApproved(MessageReviewApproved event)
     {
-        System.out.println("");
         log.info("[KAFKA CONSUMER] Conteúdo aprovado recebido: messageId={}", event.messageId());
 
         Optional<Question> questionOpt = questionRepository.findById(event.messageId());
@@ -59,14 +56,8 @@ public class KafkaReviewConsumer {
             question.setStatus(ContentStatus.ACTIVE);
             questionRepository.save(question);
 
-            outboxEventPublisher.publish(questionApprovedTopic, new QuestionApprovedNotification(
-                    question.getSellerId(),
-                    question.getAuctionId(),
-                    question.getId(),
-                    question.getText(),
-                    Instant.now(),
-                    event.correlationId()
-            ));
+            outboxEventPublisher.publish(questionApprovedTopic,
+                    QuestionApprovedNotification.forSellerOf(question, event.correlationId()));
 
             log.info("[KAFKA CONSUMER] Pergunta {} marcada como ACTIVE. Notificação para o vendedor {} enfileirada.",
                     question.getId(), question.getSellerId());
@@ -79,20 +70,11 @@ public class KafkaReviewConsumer {
             answer.setStatus(ContentStatus.ACTIVE);
             answerRepository.save(answer);
 
-            Question question = answer.getQuestion();
-            outboxEventPublisher.publish(answerApprovedTopic, new AnswerApprovedNotification(
-                    UUID.fromString("bddfe29d-3bd1-47e5-bf4b-03a50c65d534"),  // !!!! AQUI !!!!!
-                    question.getAuctionId(),
-                    question.getId(),
-                    answer.getId(),
-                    question.getText(),
-                    answer.getText(),
-                    Instant.now(),
-                    event.correlationId()
-            ));
+            outboxEventPublisher.publish(answerApprovedTopic,
+                    AnswerApprovedNotification.forBuyerOf(answer, event.correlationId()));
 
             log.info("[KAFKA CONSUMER] Resposta {} marcada como ACTIVE. Notificação para o comprador {} enfileirada.",
-                    answer.getId(), question.getUserId());
+                    answer.getId(), answer.getQuestion().getAuthorId());
             return;
         }
 
@@ -116,18 +98,11 @@ public class KafkaReviewConsumer {
             question.setRejectionReason(event.reason());
             questionRepository.save(question);
 
-            outboxEventPublisher.publish(questionRejectedTopic, new QuestionRejectedNotification(
-                    question.getUserId(),
-                    question.getAuctionId(),
-                    question.getId(),
-                    question.getText(),
-                    event.reason(),
-                    Instant.now(),
-                    event.correlationId()
-            ));
+            outboxEventPublisher.publish(questionRejectedTopic,
+                    QuestionRejectedNotification.forAuthorOf(question, event.reason(), event.correlationId()));
 
             log.info("[KAFKA CONSUMER] Pergunta {} marcada como REJECTED. Notificação para o autor {} enfileirada.",
-                    question.getId(), question.getUserId());
+                    question.getId(), question.getAuthorId());
             return;
         }
 
@@ -138,20 +113,11 @@ public class KafkaReviewConsumer {
             answer.setRejectionReason(event.reason());
             answerRepository.save(answer);
 
-            Question question = answer.getQuestion();
-            outboxEventPublisher.publish(answerRejectedTopic, new AnswerRejectedNotification(
-                    answer.getUserId(),
-                    question.getAuctionId(),
-                    question.getId(),
-                    answer.getId(),
-                    answer.getText(),
-                    event.reason(),
-                    Instant.now(),
-                    event.correlationId()
-            ));
+            outboxEventPublisher.publish(answerRejectedTopic,
+                    AnswerRejectedNotification.forAuthorOf(answer, event.reason(), event.correlationId()));
 
             log.info("[KAFKA CONSUMER] Resposta {} marcada como REJECTED. Notificação para o autor {} enfileirada.",
-                    answer.getId(), answer.getUserId());
+                    answer.getId(), answer.getAuthorId());
             return;
         }
 

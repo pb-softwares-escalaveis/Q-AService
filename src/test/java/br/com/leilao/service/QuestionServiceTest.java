@@ -76,7 +76,7 @@ class QuestionServiceTest
                 .id(questionId)
                 .auctionId(auctionId)
                 .sellerId(sellerId)
-                .userId(userId)
+                .authorId(userId)
                 .text(createRequest.text())
                 .status(ContentStatus.PENDING_ANALYSIS)
                 .createdAt(LocalDateTime.now())

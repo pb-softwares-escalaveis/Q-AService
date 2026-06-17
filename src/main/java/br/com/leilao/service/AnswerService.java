@@ -62,7 +62,7 @@ public class AnswerService
 
         Answer answer = Answer.builder()
                 .question(question)
-                .userId(userId)
+                .authorId(userId)
                 .text(request.text())
                 .status(ContentStatus.PENDING_ANALYSIS)
                 .build();
@@ -96,7 +96,7 @@ public class AnswerService
             throw new InvalidOperationException("A resposta não pertence a esta pergunta.");
         }
 
-        if (!answer.getUserId().equals(userId)) {
+        if (!answer.getAuthorId().equals(userId)) {
             throw new ForbiddenOperationException("Você não tem permissão para excluir esta resposta.");
         }
 

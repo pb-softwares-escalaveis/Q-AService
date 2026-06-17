@@ -1,5 +1,7 @@
 package br.com.leilao.integration.kafka.events;
 
+import br.com.leilao.domain.entity.Question;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -15,4 +17,15 @@ public record QuestionApprovedNotification(
         String questionText,
         Instant occurredAt,
         UUID correlationId
-) {}
+) {
+    public static QuestionApprovedNotification forSellerOf(Question question, UUID correlationId) {
+        return new QuestionApprovedNotification(
+                question.getSellerId(),
+                question.getAuctionId(),
+                question.getId(),
+                question.getText(),
+                Instant.now(),
+                correlationId
+        );
+    }
+}

@@ -7,6 +7,6 @@ public record MessageReviewApproved(
         Long auctionId,
         UUID sellerId,
         Long messageId,
-        Instant ocurredAt,
+        Instant occurredAt,
         UUID correlationId
 ) {}

@@ -8,6 +8,6 @@ public record MessageReviewRejected(
         UUID sellerId,
         Long messageId,
         String reason,
-        Instant ocurredAt,
+        Instant occurredAt,
         UUID correlationId
 ) {}

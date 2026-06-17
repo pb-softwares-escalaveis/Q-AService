@@ -1,5 +1,6 @@
 package br.com.leilao.controller;
 
+import br.com.leilao.aop.RateLimited;
 import br.com.leilao.dto.request.CreateAnswerRequest;
 import br.com.leilao.dto.response.AnswerResponse;
 import br.com.leilao.service.AnswerService;
@@ -19,6 +20,7 @@ public class AnswerController
 
     private final AnswerService answerService;
 
+    @RateLimited("create-answer")
     @PostMapping("/questions/{questionId}/answers")
     public ResponseEntity<AnswerResponse> createAnswer(
             @PathVariable Long questionId,

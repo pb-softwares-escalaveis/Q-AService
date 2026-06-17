@@ -56,6 +56,14 @@ app:
       notify-answer-rejected: "qa.answer.rejected"
     redis:
       time-to-live: 60m
+  rate-limit:
+    actions:
+      create-question:
+        limit: 10
+        window-seconds: 60
+      create-answer:
+        limit: 10
+        window-seconds: 60
 
 server:
   port: 8098

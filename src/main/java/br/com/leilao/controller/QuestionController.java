@@ -1,5 +1,6 @@
 package br.com.leilao.controller;
 
+import br.com.leilao.aop.RateLimited;
 import br.com.leilao.dto.request.CreateQuestionRequest;
 import br.com.leilao.dto.response.QuestionResponse;
 import br.com.leilao.service.QuestionService;
@@ -23,6 +24,7 @@ public class QuestionController
 
     private final QuestionService questionService;
 
+    @RateLimited("create-question")
     @PostMapping("/auctions/{auctionId}/questions")
     public ResponseEntity<QuestionResponse> createQuestion(
             @PathVariable Long auctionId,

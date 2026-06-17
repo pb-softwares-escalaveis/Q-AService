@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -49,6 +50,7 @@ public class KafkaReviewConsumer {
     @KafkaListener(topics = "${app.kafka.topics.qa-review-approved}", groupId = "qa-group")
     public void consumeApproved(MessageReviewApproved event)
     {
+        System.out.println("");
         log.info("[KAFKA CONSUMER] Conteúdo aprovado recebido: messageId={}", event.messageId());
 
         Optional<Question> questionOpt = questionRepository.findById(event.messageId());
@@ -79,7 +81,7 @@ public class KafkaReviewConsumer {
 
             Question question = answer.getQuestion();
             outboxEventPublisher.publish(answerApprovedTopic, new AnswerApprovedNotification(
-                    question.getUserId(),
+                    UUID.fromString("bddfe29d-3bd1-47e5-bf4b-03a50c65d534"),  // !!!! AQUI !!!!!
                     question.getAuctionId(),
                     question.getId(),
                     answer.getId(),

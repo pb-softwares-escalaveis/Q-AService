@@ -3,7 +3,7 @@ spring:
     name: QA-SERVICE
 
   profiles:
-    active: prod
+    active: dev
 
   jpa:
     hibernate:
@@ -48,8 +48,8 @@ app:
   kafka:
     topics:
       qa-review-created-pending: "qa.review.created-pending"
-      qa-review-approved: "qa.review.approved"
-      qa-review-rejected: "qa.review.rejected"
+      qa-review-approved: "reviews.qa.approved"
+      qa-review-rejected: "reviews.qa.rejected"
       notify-question-approved: "qa.question.approved"
       notify-answer-approved: "qa.answer.approved"
       notify-question-rejected: "qa.question.rejected"
@@ -58,7 +58,7 @@ app:
       time-to-live: 60m
 
 server:
-  port: 8084
+  port: 8098
 
 eureka:
   client:

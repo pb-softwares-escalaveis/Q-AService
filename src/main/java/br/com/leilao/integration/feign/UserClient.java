@@ -8,7 +8,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
-@FeignClient(name = "user-service", fallbackFactory = UserClientFallbackFactory.class)
+@FeignClient(
+        name = "user-service",
+        url = "http://localhost:8099",
+        fallbackFactory = UserClientFallbackFactory.class
+)
 @Retry(name = "user-service")
 public interface UserClient {
 

@@ -6,7 +6,11 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "auctionService", fallbackFactory = AuctionClientFallbackFactory.class)
+@FeignClient(
+        name = "auctionService",
+        url = "http://localhost:8066",
+        fallbackFactory = AuctionClientFallbackFactory.class
+)
 @Retry(name = "auctionService")
 public interface AuctionClient {
     @GetMapping("/auctions/{auctionId}")

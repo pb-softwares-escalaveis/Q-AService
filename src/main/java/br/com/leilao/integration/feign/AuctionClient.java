@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(
         name = "auctionService",
-        url = "http://localhost:8066",
         fallbackFactory = AuctionClientFallbackFactory.class
 )
 @Retry(name = "auctionService")

@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @FeignClient(
         name = "user-service",
-        url = "http://localhost:8099",
         fallbackFactory = UserClientFallbackFactory.class
 )
 @Retry(name = "user-service")

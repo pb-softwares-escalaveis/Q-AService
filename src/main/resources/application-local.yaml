@@ -7,9 +7,9 @@ spring:
       client:
         config:
           auctionService:
-            url: http://localhost:8080
+            url: http://localhost:8066
           user-service:
-            url: http://localhost:8081
+            url: http://localhost:8080
 eureka:
   client:
     enabled: false

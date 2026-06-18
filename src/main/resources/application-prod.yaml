@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/qa_service_db}
-    username: ${DB_USER:qa_user}
-    password: ${DB_PASS:qa_pass}
+    url: ${QA_SERVICE_DB_URL}
+    username: ${QA_SERVICE_DB_USER}
+    password: ${QA_SERVICE_DB_PASS}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -11,20 +11,21 @@ spring:
       hibernate:
         format_sql: false
 
-  # Para reparar checksums em prod (raro), use `./mvnw flyway:repair`
-
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${QA_SERVICE_REDIS_HOST}
+      port: ${QA_SERVICE_REDIS_PORT}
 
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${QA_SERVICE_KAFKA_BOOTSTRAP_SERVERS}
+
+server:
+  port: ${QA_SERVICE_SERVER_PORT}
 
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+      defaultZone: ${QA_SERVICE_EUREKA_URL}
 
 logging:
   level:

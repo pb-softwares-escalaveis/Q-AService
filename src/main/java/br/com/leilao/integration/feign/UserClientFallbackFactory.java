@@ -7,11 +7,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-/**
- * Fallback degradado (modo 7b): se o user-service estiver indisponível, devolve
- * nome/e-mail nulos em vez de bloquear a publicação do evento de moderação.
- * Os campos serão removidos do contrato MessageCreatedPendingReview na Fase 2.
- */
 @Slf4j
 @Component
 public class UserClientFallbackFactory implements FallbackFactory<UserClient> {

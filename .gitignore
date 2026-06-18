@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local infra / runtime ###
+message-broker-main/
+app.log
+.env.docker

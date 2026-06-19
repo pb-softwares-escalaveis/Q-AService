@@ -19,10 +19,10 @@ public class RestResponsePage<T> extends PageImpl<T> {
             @JsonProperty("number") int number,
             @JsonProperty("size") int size,
             @JsonProperty("totalElements") Long totalElements,
-            @JsonProperty("pageable") Object pageable,
+            @JsonProperty("pageable") com.fasterxml.jackson.databind.JsonNode pageable,
             @JsonProperty("last") boolean last,
             @JsonProperty("totalPages") int totalPages,
-            @JsonProperty("sort") Object sort,
+            @JsonProperty("sort") com.fasterxml.jackson.databind.JsonNode sort,
             @JsonProperty("first") boolean first,
             @JsonProperty("numberOfElements") int numberOfElements) {
         super(content, PageRequest.of(number, size), totalElements);

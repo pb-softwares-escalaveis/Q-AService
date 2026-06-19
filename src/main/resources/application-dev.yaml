@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/qa_service_db
+    url: jdbc:postgresql://localhost:5438/qadb
     username: qa_user
-    password: qa_pass
+    password: qa_password
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -15,7 +15,7 @@ spring:
   data:
     redis:
       host: localhost
-      port: 6379
+      port: 6380
 
   kafka:
     bootstrap-servers: localhost:9092

@@ -1,0 +1,46 @@
+# Build outputs
+target/
+build/
+*.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Maven wrapper interno (a imagem já reconstrói)
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE / OS
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+.sts4-cache/
+Thumbs.db
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+#Secrets
+.env
+.env.*
+!.env.docker.example
+!.env.example
+
+# Geral
+README.md
+*.md
+explicacoes-*.md
+integration-tests.http
+
+# Compose local
+compose/
+
+# Logs
+*.log
+logs/

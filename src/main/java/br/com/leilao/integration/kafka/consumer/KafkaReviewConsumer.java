@@ -15,6 +15,7 @@ import br.com.leilao.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +46,7 @@ public class KafkaReviewConsumer {
      * pergunta aprovada -> vendedor; resposta aprovada -> autor da pergunta (comprador).
      */
     @Transactional
+    @CacheEvict(value = "auction_questions", allEntries = true)
     @KafkaListener(topics = "${app.kafka.topics.qa-review-approved}", groupId = "qa-group")
     public void consumeApproved(MessageReviewApproved event)
     {
@@ -87,6 +89,7 @@ public class KafkaReviewConsumer {
      * pergunta rejeitada -> autor da pergunta (comprador); resposta rejeitada -> autor da resposta (vendedor).
      */
     @Transactional
+    @CacheEvict(value = "auction_questions", allEntries = true)
     @KafkaListener(topics = "${app.kafka.topics.qa-review-rejected}", groupId = "qa-group")
     public void consumeRejected(MessageReviewRejected event) {
         log.info("[KAFKA CONSUMER] Conteúdo rejeitado recebido: messageId={} | reason={}", event.messageId(), event.reason());

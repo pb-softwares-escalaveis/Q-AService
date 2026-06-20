@@ -43,7 +43,7 @@ public class QuestionService
     private String topic;
 
     @Transactional
-    @CacheEvict(value = "ad_questions", allEntries = true)
+    @CacheEvict(value = "auction_questions", allEntries = true)
     public QuestionResponse createQuestion(Long auctionId, UUID userId, boolean allowed, CreateQuestionRequest request)
     {
         if (!allowed) {
@@ -81,7 +81,7 @@ public class QuestionService
     }
 
     @Transactional
-    @CacheEvict(value = "ad_questions", allEntries = true)
+    @CacheEvict(value = "auction_questions", allEntries = true)
     public void deleteQuestion(Long questionId, UUID userId)
     {
         Question question = getQuestionById(questionId);
@@ -101,7 +101,7 @@ public class QuestionService
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "ad_questions", key = "#auctionId + '-' + #pageable.pageNumber")
+    @Cacheable(value = "auction_questions", key = "#auctionId + '-' + #pageable.pageNumber")
     public Page<QuestionResponse> listActiveQuestions(Long auctionId, Pageable pageable)
     {
         Page<Question> questionsPage = questionRepository.findByAuctionIdAndStatus(auctionId, ContentStatus.ACTIVE, pageable);

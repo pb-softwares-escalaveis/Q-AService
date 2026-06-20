@@ -54,8 +54,9 @@ app:
       notify-answer-approved: "qa.answer.approved"
       notify-question-rejected: "qa.question.rejected"
       notify-answer-rejected: "qa.answer.rejected"
-    redis:
-      time-to-live: 60m
+  cache:
+    auction-questions:
+      ttl: PT2H
   rate-limit:
     actions:
       create-question:

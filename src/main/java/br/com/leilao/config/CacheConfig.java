@@ -1,5 +1,6 @@
 package br.com.leilao.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,13 +13,16 @@ import java.time.Duration;
 
 @Configuration
 @EnableCaching
-public class CacheConfig {
+public class CacheConfig
+{
 
     @Bean
-    public RedisCacheConfiguration cacheConfiguration()
+    public RedisCacheConfiguration cacheConfiguration(
+            @Value("${app.cache.auction-questions.ttl}") Duration auctionQuestionsTtl
+    )
     {
         return RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(120))
+                .entryTtl(auctionQuestionsTtl)
                 .disableCachingNullValues()
                 .serializeKeysWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())

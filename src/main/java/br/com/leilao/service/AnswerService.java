@@ -39,7 +39,7 @@ public class AnswerService
     private String topic;
 
     @Transactional
-    @CacheEvict(value = "ad_questions", allEntries = true)
+    @CacheEvict(value = "auction_questions", allEntries = true)
     public AnswerResponse createAnswer(Long questionId, UUID userId, boolean allowed, CreateAnswerRequest request)
     {
         if (!allowed) {
@@ -88,7 +88,7 @@ public class AnswerService
     }
 
     @Transactional
-    @CacheEvict(value = "ad_questions", allEntries = true)
+    @CacheEvict(value = "auction_questions", allEntries = true)
     public void deleteAnswer(Long questionId, Long answerId, UUID userId) {
         Answer answer = getAnswerById(answerId);
 

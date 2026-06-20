@@ -66,7 +66,7 @@ app:
         window-seconds: 60
 
 server:
-  port: ${QA_SERVICE_PORT:8098}
+  port: ${QA_SERVICE_PORT}
 
 eureka:
   client:

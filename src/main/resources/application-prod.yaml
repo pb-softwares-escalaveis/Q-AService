@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${QA_SERVICE_DB_URL:jdbc:postgresql://localhost:5432/qa_service_db}
-    username: ${QA_SERVICE_DB_USER:qa_user}
-    password: ${QA_SERVICE_DB_PASSWORD:qa_pass}
+    url: jdbc:postgresql://postgres-qa:5432/qa_service_db
+    username: ${QA_SERVICE_DB_USER}
+    password: ${QA_SERVICE_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -13,19 +13,19 @@ spring:
 
   data:
     redis:
-      host: ${QA_SERVICE_REDIS_HOST:localhost}
-      port: ${QA_SERVICE_REDIS_PORT:6379}
+      host: ${QA_SERVICE_REDIS_HOST}
+      port: ${QA_SERVICE_REDIS_PORT}
 
   kafka:
-    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_SERVERS}
 
 server:
-  port: ${QA_SERVICE_PORT:8098}
+  port: 8080
 
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_SERVER_URL}
 
 logging:
   level:

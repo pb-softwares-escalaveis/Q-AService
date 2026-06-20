@@ -7,13 +7,13 @@ services:
       POSTGRES_USER: ${QA_SERVICE_DB_USER:-qa_user}
       POSTGRES_PASSWORD: ${QA_SERVICE_DB_PASSWORD:-qa_pass}
     ports:
-      - "${QA_SERVICE_DB_PORT:-5432}:5432"
+      - "${QA_SERVICE_DB_PORT}:5432"
     volumes:
       - qa_postgres_data:/var/lib/postgresql/data
     networks:
       - qa-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${QA_SERVICE_DB_USER:-qa_user} -d qa_service_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${QA_SERVICE_DB_USERR} -d qa_service_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,7 +22,7 @@ services:
     image: redis:7-alpine
     container_name: qa_service_redis
     ports:
-      - "${QA_SERVICE_REDIS_PORT:-6379}:6379"
+      - "${QA_SERVICE_REDIS_PORT}:6379"
     volumes:
       - qa_redis_data:/data
     networks:
@@ -38,7 +38,7 @@ services:
     container_name: qa-service-app
     restart: unless-stopped
     ports:
-      - "${QA_SERVICE_PORT:-8098}:8098"
+      - "${QA_SERVICE_PORT}:8098"
     environment:
       SPRING_PROFILES_ACTIVE: prod
       QA_SERVICE_PORT: 8098

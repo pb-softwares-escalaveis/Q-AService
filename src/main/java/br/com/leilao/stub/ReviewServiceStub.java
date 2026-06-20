@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -47,32 +48,39 @@ public class ReviewServiceStub
     private String rejectedTopic;
 
     @KafkaListener(topics = "${app.kafka.topics.qa-review-created-pending}", groupId = "review-stub-group")
-    public void review(MessageCreatedPendingReview event) throws JsonProcessingException {
-        String text = event.message() == null ? "" : event.message().toLowerCase();
-        String blocked = BLOCKED_KEYWORDS.stream().filter(text::contains).findFirst().orElse(null);
+    public void review(MessageCreatedPendingReview event) throws JsonProcessingException
+    {
+        String cid = event.correlationId() != null ? event.correlationId().toString() : "none";
+        MDC.put("correlationId", cid);
+        try {
+            String text = event.message() == null ? "" : event.message().toLowerCase();
+            String blocked = BLOCKED_KEYWORDS.stream().filter(text::contains).findFirst().orElse(null);
 
-        if (blocked != null) {
-            MessageReviewRejected rejected = new MessageReviewRejected(
+            if (blocked != null) {
+                MessageReviewRejected rejected = new MessageReviewRejected(
+                        event.auctionId(),
+                        event.sellerId(),
+                        event.messageId(),
+                        "Stub: palavra bloqueada detectada (" + blocked + ")",
+                        Instant.now(),
+                        event.correlationId()
+                );
+                kafkaTemplate.send(rejectedTopic, event.messageId().toString(), objectMapper.writeValueAsString(rejected));
+                log.info("[REVIEW-STUB] messageId={} REJEITADO (keyword='{}')", event.messageId(), blocked);
+                return;
+            }
+
+            MessageReviewApproved approved = new MessageReviewApproved(
                     event.auctionId(),
                     event.sellerId(),
                     event.messageId(),
-                    "Stub: palavra bloqueada detectada (" + blocked + ")",
                     Instant.now(),
                     event.correlationId()
             );
-            kafkaTemplate.send(rejectedTopic, event.messageId().toString(), objectMapper.writeValueAsString(rejected));
-            log.info("[REVIEW-STUB] messageId={} REJEITADO (keyword='{}')", event.messageId(), blocked);
-            return;
+            kafkaTemplate.send(approvedTopic, event.messageId().toString(), objectMapper.writeValueAsString(approved));
+            log.info("[REVIEW-STUB] messageId={} APROVADO", event.messageId());
+        } finally {
+            MDC.remove("correlationId");
         }
-
-        MessageReviewApproved approved = new MessageReviewApproved(
-                event.auctionId(),
-                event.sellerId(),
-                event.messageId(),
-                Instant.now(),
-                event.correlationId()
-        );
-        kafkaTemplate.send(approvedTopic, event.messageId().toString(), objectMapper.writeValueAsString(approved));
-        log.info("[REVIEW-STUB] messageId={} APROVADO", event.messageId());
     }
 }

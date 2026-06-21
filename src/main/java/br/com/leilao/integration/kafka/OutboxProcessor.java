@@ -22,7 +22,7 @@ public class OutboxProcessor
     private final OutboxEventRepository outboxEventRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 10000)
     public void processOutbox() {
         List<OutboxEvent> events = outboxEventRepository.findAllByOrderByCreatedAtAsc(PageRequest.of(0, BATCH_SIZE));
 

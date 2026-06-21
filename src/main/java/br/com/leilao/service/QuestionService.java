@@ -6,7 +6,6 @@ import br.com.leilao.dto.request.CreateQuestionRequest;
 import br.com.leilao.dto.response.QuestionResponse;
 import br.com.leilao.exception.ForbiddenOperationException;
 import br.com.leilao.exception.InvalidOperationException;
-import br.com.leilao.exception.ResourceNotFoundException;
 import br.com.leilao.integration.feign.AuctionClient;
 import br.com.leilao.integration.feign.UserClient;
 import br.com.leilao.integration.feign.dto.AuctionResponse;
@@ -84,7 +83,7 @@ public class QuestionService
     @CacheEvict(value = "auction_questions", allEntries = true)
     public void deleteQuestion(Long questionId, UUID userId)
     {
-        Question question = getQuestionById(questionId);
+        Question question = questionRepository.findByIdOrThrow(questionId);
 
         if (!question.getAuthorId().equals(userId)) {
             throw new ForbiddenOperationException("Você não tem permissão para excluir esta pergunta.");
@@ -110,11 +109,5 @@ public class QuestionService
                 .toList();
 
         return new br.com.leilao.dto.response.RestResponsePage<>(content, pageable, questionsPage.getTotalElements());
-    }
-
-    public Question getQuestionById(Long questionId)
-    {
-        return questionRepository.findById(questionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Pergunta não encontrada."));
     }
 }

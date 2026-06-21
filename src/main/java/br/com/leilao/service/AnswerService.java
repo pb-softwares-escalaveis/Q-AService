@@ -14,6 +14,7 @@ import br.com.leilao.integration.feign.dto.UserResponse;
 import br.com.leilao.integration.kafka.OutboxEventPublisher;
 import br.com.leilao.integration.kafka.events.MessageCreatedPendingReview;
 import br.com.leilao.repository.AnswerRepository;
+import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.AnswerMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +31,7 @@ public class AnswerService
 {
 
     private final AnswerRepository answerRepository;
-    private final QuestionService questionService;
+    private final QuestionRepository questionRepository;
     private final UserClient userClient;
     private final OutboxEventPublisher outboxEventPublisher;
     private final AnswerMapper answerMapper;
@@ -46,7 +47,7 @@ public class AnswerService
             throw new ForbiddenOperationException("Usuário não autorizado a realizar esta operação (conta restrita).");
         }
 
-        Question question = questionService.getQuestionById(questionId);
+        Question question = questionRepository.findByIdOrThrow(questionId);
 
         if (!question.getSellerId().equals(userId)) {
             throw new ForbiddenOperationException("Apenas o vendedor do anúncio pode responder a pergunta.");

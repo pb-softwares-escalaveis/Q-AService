@@ -10,6 +10,7 @@ import br.com.leilao.integration.feign.UserClient;
 import br.com.leilao.integration.feign.dto.UserResponse;
 import br.com.leilao.integration.kafka.OutboxEventPublisher;
 import br.com.leilao.repository.AnswerRepository;
+import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.AnswerMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,7 +37,7 @@ class AnswerServiceTest
     private AnswerRepository answerRepository;
 
     @Mock
-    private QuestionService questionService;
+    private QuestionRepository questionRepository;
 
     @Mock
     private UserClient userClient;
@@ -103,7 +104,7 @@ class AnswerServiceTest
                 ContentStatus.PENDING_ANALYSIS, null, LocalDateTime.now(), LocalDateTime.now()
         );
 
-        when(questionService.getQuestionById(questionId)).thenReturn(question);
+        when(questionRepository.findByIdOrThrow(questionId)).thenReturn(question);
         when(answerRepository.existsByQuestion_Id(questionId)).thenReturn(false);
         when(userClient.getUserById(sellerId)).thenReturn(new UserResponse("Vendedor", "vendedor@test.com"));
         when(answerRepository.save(any(Answer.class))).thenReturn(savedAnswer);
@@ -126,7 +127,7 @@ class AnswerServiceTest
     void deveCriarAnswerRetornarForbidden()
     {
         UUID fakeUserId = UUID.randomUUID();
-        when(questionService.getQuestionById(questionId)).thenReturn(question);
+        when(questionRepository.findByIdOrThrow(questionId)).thenReturn(question);
 
         ForbiddenOperationException exception = assertThrows(
                 ForbiddenOperationException.class,
@@ -146,6 +147,6 @@ class AnswerServiceTest
                 () -> answerService.createAnswer(questionId, sellerId, false, createRequest)
         );
 
-        verifyNoInteractions(questionService, answerRepository, userClient, outboxEventPublisher, answerMapper);
+        verifyNoInteractions(questionRepository, answerRepository, userClient, outboxEventPublisher, answerMapper);
     }
 }

@@ -22,6 +22,8 @@ import java.util.UUID;
 public class QuestionController
 {
 
+    private static final String SORT_FIELD_CREATED_AT = "createdAt";
+
     private final QuestionService questionService;
 
     @RateLimited("create-question")
@@ -48,7 +50,7 @@ public class QuestionController
             @PathVariable Long auctionId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(SORT_FIELD_CREATED_AT).ascending());
         Page<QuestionResponse> response = questionService.listActiveQuestions(auctionId, pageable);
         return ResponseEntity.ok(response);
     }

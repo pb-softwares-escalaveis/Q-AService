@@ -15,7 +15,7 @@ public class AuctionClientFallbackFactory implements FallbackFactory<AuctionClie
         return new AuctionClient() {
             @Override
             public AuctionResponse getAuctionById (Long auctionId) {
-                log.error("Erro ao buscar o anúncio {}: {}", auctionId, cause.getMessage());
+                log.error("[AUCTION-CLIENT] Erro ao buscar o anúncio {}: {}", auctionId, cause.getMessage());
                 throw new AuctionServiceUnavailableException("O serviço de leilões está temporariamente indisponível.", cause);
             }
         };

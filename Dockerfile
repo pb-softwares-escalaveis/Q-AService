@@ -26,4 +26,6 @@ USER appuser
 
 EXPOSE 8098
 
+ENV SPRING_PROFILES_ACTIVE=prod
+
 ENTRYPOINT ["java", "-jar", "app.jar"]

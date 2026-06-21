@@ -16,7 +16,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Question {
+public class Question
+{
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "qa_content_seq")
@@ -50,4 +51,8 @@ public class Question {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    public Answer publicAnswer() {
+        return answer != null && answer.getStatus() == ContentStatus.ACTIVE ? answer : null;
+    }
 }

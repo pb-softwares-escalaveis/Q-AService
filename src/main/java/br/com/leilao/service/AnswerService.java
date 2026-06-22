@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -35,11 +36,11 @@ public class AnswerService
     private final UserClient userClient;
     private final OutboxEventPublisher outboxEventPublisher;
     private final AnswerMapper answerMapper;
+    private final TransactionTemplate transactionTemplate;
 
     @Value("${app.kafka.topics.qa-review-created-pending}")
     private String topic;
 
-    @Transactional
     @CacheEvict(value = "auction_questions", allEntries = true)
     public AnswerResponse createAnswer(Long questionId, UUID userId, boolean allowed, CreateAnswerRequest request)
     {
@@ -61,31 +62,34 @@ public class AnswerService
             throw new AnswerAlreadyExistsException("Já existe uma resposta para esta pergunta.");
         }
 
-        Answer answer = Answer.builder()
-                .question(question)
-                .authorId(userId)
-                .text(request.text())
-                .status(ContentStatus.PENDING_ANALYSIS)
-                .build();
-
-        answer = answerRepository.save(answer);
-
+        // Chamada HTTP (Feign) fora da transação (mesmo motivo do QuestionService).
         UserResponse seller = userClient.getUserById(userId);
 
-        MessageCreatedPendingReview event = new MessageCreatedPendingReview(
-                question.getAuctionId(),
-                userId,
-                answer.getId(),
-                seller.nome(),
-                seller.email(),
-                answer.getText(),
-                Instant.now(),
-                UUID.randomUUID()
-        );
+        return transactionTemplate.execute(status -> {
+            Answer answer = Answer.builder()
+                    .question(question)
+                    .authorId(userId)
+                    .text(request.text())
+                    .status(ContentStatus.PENDING_ANALYSIS)
+                    .build();
 
-        outboxEventPublisher.publish(topic, String.valueOf(question.getAuctionId()), event);
+            answer = answerRepository.save(answer);
 
-        return answerMapper.toResponse(answer);
+            MessageCreatedPendingReview event = new MessageCreatedPendingReview(
+                    question.getAuctionId(),
+                    userId,
+                    answer.getId(),
+                    seller.nome(),
+                    seller.email(),
+                    answer.getText(),
+                    Instant.now(),
+                    UUID.randomUUID()
+            );
+
+            outboxEventPublisher.publish(topic, String.valueOf(question.getAuctionId()), event);
+
+            return answerMapper.toResponse(answer);
+        });
     }
 
     @Transactional

@@ -19,6 +19,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -47,6 +50,9 @@ class QuestionServiceTest
 
     @Mock
     private QuestionMapper questionMapper;
+
+    @Mock
+    private TransactionTemplate transactionTemplate;
 
     @InjectMocks
     private QuestionService questionService;
@@ -106,6 +112,11 @@ class QuestionServiceTest
         when(userClient.getUserById(sellerId)).thenReturn(new UserResponse("Vendedor", "vendedor@test.com"));
         when(questionRepository.save(any(Question.class))).thenReturn(savedQuestion);
         when(questionMapper.toResponse(any(Question.class))).thenReturn(questionResponse);
+
+        when(transactionTemplate.execute(any())).thenAnswer(invocation -> {
+            TransactionCallback<?> callback = invocation.getArgument(0);
+            return callback.doInTransaction(mock(TransactionStatus.class));
+        });
 
         // Act
         QuestionResponse response = questionService.createQuestion(auctionId, userId, true, createRequest);

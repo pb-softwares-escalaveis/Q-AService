@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Instant;
 import java.util.List;
@@ -37,11 +38,11 @@ public class QuestionService
     private final UserClient userClient;
     private final OutboxEventPublisher outboxEventPublisher;
     private final QuestionMapper questionMapper;
+    private final TransactionTemplate transactionTemplate;
 
     @Value("${app.kafka.topics.qa-review-created-pending}")
     private String topic;
 
-    @Transactional
     @CacheEvict(value = "auction_questions", allEntries = true)
     public QuestionResponse createQuestion(Long auctionId, UUID userId, boolean allowed, CreateQuestionRequest request)
     {
@@ -49,34 +50,36 @@ public class QuestionService
             throw new ForbiddenOperationException("Usuário não autorizado a realizar esta operação (conta restrita).");
         }
 
+        // Chamadas feign ficam FORA da transação para não segurar conexão do enquanto aguarda os serviços externos (auction-service / user-service).
         AuctionResponse auctionResponse = auctionClient.getAuctionById(auctionId);
+        UserResponse seller = userClient.getUserById(auctionResponse.sellerId());
 
-        Question question = Question.builder()
-                .auctionId(auctionId)
-                .sellerId(auctionResponse.sellerId())
-                .authorId(userId)
-                .text(request.text())
-                .status(ContentStatus.PENDING_ANALYSIS)
-                .build();
+        return transactionTemplate.execute(status -> {
+            Question question = Question.builder()
+                    .auctionId(auctionId)
+                    .sellerId(auctionResponse.sellerId())
+                    .authorId(userId)
+                    .text(request.text())
+                    .status(ContentStatus.PENDING_ANALYSIS)
+                    .build();
 
-        question = questionRepository.save(question);
+            question = questionRepository.save(question);
 
-        UserResponse seller = userClient.getUserById(question.getSellerId());
+            MessageCreatedPendingReview event = new MessageCreatedPendingReview(
+                    auctionId,
+                    question.getSellerId(),
+                    question.getId(),
+                    seller.nome(),
+                    seller.email(),
+                    question.getText(),
+                    Instant.now(),
+                    UUID.randomUUID()
+            );
 
-        MessageCreatedPendingReview event = new MessageCreatedPendingReview(
-                auctionId,
-                question.getSellerId(),
-                question.getId(),
-                seller.nome(),
-                seller.email(),
-                question.getText(),
-                Instant.now(),
-                UUID.randomUUID()
-        );
+            outboxEventPublisher.publish(topic, String.valueOf(auctionId), event);
 
-        outboxEventPublisher.publish(topic, String.valueOf(auctionId), event);
-
-        return questionMapper.toResponse(question);
+            return questionMapper.toResponse(question);
+        });
     }
 
     @Transactional

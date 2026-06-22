@@ -16,6 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Collections;
@@ -53,11 +54,15 @@ class AuctionClientCircuitBreakerTest
     @MockBean
     private StringRedisTemplate stringRedisTemplate;
 
+    @MockBean
+    private TransactionTemplate transactionTemplate;
+
     private CircuitBreaker circuitBreaker;
 
     @BeforeEach
-    void setUp() {
-        // Stub para o OutboxProcessor (@Scheduled cada 10s) não estourar NPE durante o teste.
+    void setUp()
+    {
+        // Stub para o OutboxProcessor (@Scheduled cada 10s)
         when(outboxEventRepository.findByStatusOrderByCreatedAtAsc(any(), any())).thenReturn(Collections.emptyList());
 
         // Captura a instância exata do Circuit Breaker configurada no seu application.yaml
@@ -72,7 +77,8 @@ class AuctionClientCircuitBreakerTest
 
     @Test
     @DisplayName("Deve abrir o Circuit Breaker após taxa de falha atingir o limite (50%) na janela de 10 chamadas")
-    void abreCircuitAposFalhasSeguidas() {
+    void abreCircuitAposFalhasSeguidas()
+    {
         // Configura o WireMock para simular o auction-service retornando erro 500
         stubFor(get(urlMatching("/auctions/.*"))
                 .willReturn(aResponse().withStatus(500)));
@@ -89,7 +95,8 @@ class AuctionClientCircuitBreakerTest
 
     @Test
     @DisplayName("Deve lançar AuctionServiceUnavailableException quando o circuito estiver ABERTO")
-    void fallbackEhAcionadoQuandoCircuitAbre() {
+    void fallbackEhAcionadoQuandoCircuitAbre()
+    {
         // Simula o erro do serviço
         stubFor(get(urlMatching("/auctions/.*"))
                 .willReturn(aResponse().withStatus(500)));

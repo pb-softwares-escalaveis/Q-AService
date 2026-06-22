@@ -13,7 +13,7 @@ services:
     networks:
       - qa-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${QA_SERVICE_DB_USERR} -d qa_service_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${QA_SERVICE_DB_USER:-qa_user} -d qa_service_db"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -6,7 +6,7 @@ spring:
     openfeign:
       client:
         config:
-          auctionService:
+          auction-service:
             url: http://localhost:8066
           user-service:
             url: http://localhost:8080

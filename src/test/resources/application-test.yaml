@@ -20,8 +20,8 @@ spring:
       client:
         simple:
           instances:
-            auctionService:
-              - service-id: auctionService
+            auction-service:
+              - service-id: auction-service
                 host: localhost
                 port: ${wiremock.server.port}
             user-service:
@@ -36,7 +36,7 @@ eureka:
 resilience4j:
   retry:
     instances:
-      auctionService:
+      auction-service:
         maxAttempts: 1
         waitDuration: 10ms
       user-service:

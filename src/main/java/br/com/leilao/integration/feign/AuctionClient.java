@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(
-        name = "auctionService",
+        name = "auction-service",
         fallbackFactory = AuctionClientFallbackFactory.class
 )
-@Retry(name = "auctionService")
+@Retry(name = "auction-service")
 public interface AuctionClient {
     @GetMapping("/auctions/{auctionId}")
     AuctionResponse getAuctionById(@PathVariable("auctionId") Long auctionId);

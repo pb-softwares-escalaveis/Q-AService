@@ -61,7 +61,7 @@ class AuctionClientCircuitBreakerTest
         when(outboxEventRepository.findByStatusOrderByCreatedAtAsc(any(), any())).thenReturn(Collections.emptyList());
 
         // Captura a instância exata do Circuit Breaker configurada no seu application.yaml
-        circuitBreaker = registry.circuitBreaker("auctionService");
+        circuitBreaker = registry.circuitBreaker("auction-service");
 
         // Garante que todo teste comece com o circuito fechado (estado normal)
         circuitBreaker.transitionToClosedState();

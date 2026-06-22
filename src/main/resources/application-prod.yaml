@@ -14,7 +14,8 @@ spring:
   data:
     redis:
       host: ${QA_SERVICE_REDIS_HOST}
-      port: ${QA_SERVICE_REDIS_PORT}
+      # Porta INTERNA do container Redis (sempre 6379). NÃO usar ${QA_SERVICE_REDIS_PORT}:
+      port: 6379
 
   kafka:
     bootstrap-servers: ${KAFKA_SERVERS}

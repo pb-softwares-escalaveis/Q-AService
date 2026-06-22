@@ -30,7 +30,7 @@ spring:
     openfeign:
       client:
         config:
-          auctionService:
+          auction-service:
             connectTimeout: 2000
             readTimeout: 2000
             loggerLevel: BASIC
@@ -93,7 +93,7 @@ management:
 resilience4j:
   circuitbreaker:
     instances:
-      auctionService:
+      auction-service:
         registerHealthIndicator: true
         slidingWindowSize: 10
         minimumNumberOfCalls: 5
@@ -111,7 +111,7 @@ resilience4j:
         automaticTransitionFromOpenToHalfOpenEnabled: true
   retry:
     instances:
-      auctionService:
+      auction-service:
         maxAttempts: 3
         waitDuration: 2s
       user-service:

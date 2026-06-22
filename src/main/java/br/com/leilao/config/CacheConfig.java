@@ -1,5 +1,9 @@
 package br.com.leilao.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +25,18 @@ public class CacheConfig
             @Value("${app.cache.auction-questions.ttl}") Duration auctionQuestionsTtl
     )
     {
+        ObjectMapper cacheObjectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        cacheObjectMapper.activateDefaultTyping(
+                cacheObjectMapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+        );
+
+        GenericJackson2JsonRedisSerializer valueSerializer =
+                new GenericJackson2JsonRedisSerializer(cacheObjectMapper);
+
         return RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(auctionQuestionsTtl)
                 .disableCachingNullValues()
@@ -28,7 +44,7 @@ public class CacheConfig
                         RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
                 )
                 .serializeValuesWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())
+                        RedisSerializationContext.SerializationPair.fromSerializer(valueSerializer)
                 );
     }
 }

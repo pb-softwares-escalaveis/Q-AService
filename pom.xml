@@ -10,7 +10,7 @@
         <version>3.3.4</version>
     </parent>
 
-    <groupId>br.com.infnet</groupId>
+    <groupId>br.com.leilao</groupId>
     <artifactId>QAService</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>QAService</name>
@@ -174,12 +174,7 @@
                     </excludes>
                 </configuration>
             </plugin>
-            <!-- flyway-maven-plugin: ferramentas administrativas de migrations (info/validate/repair).
-                 Uso típico:
-                   ./mvnw flyway:info     -Dflyway.url=jdbc:postgresql://localhost:5432/qa_service_db -Dflyway.user=qa_user -Dflyway.password=qa_pass
-                   ./mvnw flyway:validate -Dflyway.url=... -Dflyway.user=... -Dflyway.password=...
-                   ./mvnw flyway:repair   -Dflyway.url=... -Dflyway.user=... -Dflyway.password=...
-                 NUNCA usar flyway:clean em prod. -->
+
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>

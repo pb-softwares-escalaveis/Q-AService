@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://postgres-qa:5432/qa_service_db
+    url: ${QA_SERVICE_DB_URL:jdbc:postgresql://postgres-qa:5432/qa_service_db}
     username: ${QA_SERVICE_DB_USER}
     password: ${QA_SERVICE_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -21,7 +21,7 @@ spring:
     bootstrap-servers: ${KAFKA_SERVERS}
 
 server:
-  port: 8080
+  port: ${QA_SERVICE_PORT:8098}
 
 eureka:
   client:

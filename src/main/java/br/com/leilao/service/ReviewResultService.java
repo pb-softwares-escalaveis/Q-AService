@@ -60,6 +60,7 @@ public class ReviewResultService
             questionRepository.save(question);
 
             outboxEventPublisher.publish(questionApprovedTopic,
+                    String.valueOf(question.getAuctionId()),
                     QuestionApprovedNotification.forSellerOf(question, correlationId));
 
             log.info("[REVIEW-RESULT] Pergunta {} marcada como ACTIVE. Notificação para o vendedor {} enfileirada.",
@@ -81,6 +82,7 @@ public class ReviewResultService
             answerRepository.save(answer);
 
             outboxEventPublisher.publish(answerApprovedTopic,
+                    String.valueOf(answer.getQuestion().getAuctionId()),
                     AnswerApprovedNotification.forBuyerOf(answer, correlationId));
 
             log.info("[REVIEW-RESULT] Resposta {} marcada como ACTIVE. Notificação para o comprador {} enfileirada.",
@@ -100,7 +102,8 @@ public class ReviewResultService
     public void applyRejection(Long messageId, String reason, UUID correlationId)
     {
         Optional<Question> questionOpt = questionRepository.findById(messageId);
-        if (questionOpt.isPresent()) {
+        if (questionOpt.isPresent())
+        {
             Question question = questionOpt.get();
             if (question.getStatus() != ContentStatus.PENDING_ANALYSIS) {
                 log.warn("[REVIEW-RESULT] Ignorando rejeição para Pergunta {} — status atual {} (esperado PENDING_ANALYSIS). Possível redelivery do Kafka.",
@@ -113,6 +116,7 @@ public class ReviewResultService
             questionRepository.save(question);
 
             outboxEventPublisher.publish(questionRejectedTopic,
+                    String.valueOf(question.getAuctionId()),
                     QuestionRejectedNotification.forAuthorOf(question, reason, correlationId));
 
             log.info("[REVIEW-RESULT] Pergunta {} marcada como REJECTED. Notificação para o autor {} enfileirada.",
@@ -134,6 +138,7 @@ public class ReviewResultService
             answerRepository.save(answer);
 
             outboxEventPublisher.publish(answerRejectedTopic,
+                    String.valueOf(answer.getQuestion().getAuctionId()),
                     AnswerRejectedNotification.forAuthorOf(answer, reason, correlationId));
 
             log.info("[REVIEW-RESULT] Resposta {} marcada como REJECTED. Notificação para o autor {} enfileirada.",

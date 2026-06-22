@@ -74,7 +74,7 @@ public class QuestionService
                 UUID.randomUUID()
         );
 
-        outboxEventPublisher.publish(topic, event);
+        outboxEventPublisher.publish(topic, String.valueOf(auctionId), event);
 
         return questionMapper.toResponse(question);
     }

@@ -15,13 +15,14 @@ public class OutboxEventPublisher
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
 
-    public void publish(String topic, Object event)
+    public void publish(String topic, String aggregateId, Object event)
     {
         try {
             String payloadJson = objectMapper.writeValueAsString(event);
 
             OutboxEvent outboxEvent = OutboxEvent.builder()
                     .topic(topic)
+                    .aggregateId(aggregateId)
                     .payload(payloadJson)
                     .build();
 

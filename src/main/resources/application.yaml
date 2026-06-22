@@ -54,6 +54,8 @@ app:
       notify-answer-approved: "qa.answer.approved"
       notify-question-rejected: "qa.question.rejected"
       notify-answer-rejected: "qa.answer.rejected"
+  outbox:
+    max-attempts: 10
   cache:
     auction-questions:
       ttl: PT2H

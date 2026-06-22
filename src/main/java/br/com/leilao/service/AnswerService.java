@@ -83,7 +83,7 @@ public class AnswerService
                 UUID.randomUUID()
         );
 
-        outboxEventPublisher.publish(topic, event);
+        outboxEventPublisher.publish(topic, String.valueOf(question.getAuctionId()), event);
 
         return answerMapper.toResponse(answer);
     }

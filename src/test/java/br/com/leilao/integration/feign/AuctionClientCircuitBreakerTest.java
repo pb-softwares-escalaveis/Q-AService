@@ -57,8 +57,8 @@ class AuctionClientCircuitBreakerTest
 
     @BeforeEach
     void setUp() {
-        // Stub para o OutboxProcessor (@Scheduled cada 5s) não estourar NPE durante o teste.
-        when(outboxEventRepository.findAllByOrderByCreatedAtAsc(any())).thenReturn(Collections.emptyList());
+        // Stub para o OutboxProcessor (@Scheduled cada 10s) não estourar NPE durante o teste.
+        when(outboxEventRepository.findByStatusOrderByCreatedAtAsc(any(), any())).thenReturn(Collections.emptyList());
 
         // Captura a instância exata do Circuit Breaker configurada no seu application.yaml
         circuitBreaker = registry.circuitBreaker("auctionService");

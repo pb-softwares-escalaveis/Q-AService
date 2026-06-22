@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -116,7 +117,7 @@ class QuestionServiceTest
 
         verify(questionRepository).save(any(Question.class));
         verify(userClient).getUserById(sellerId);
-        verify(outboxEventPublisher).publish(eq("qa.review.created-pending"), any());
+        verify(outboxEventPublisher).publish(eq("qa.review.created-pending"), eq(String.valueOf(auctionId)), any());
         verify(questionMapper).toResponse(any(Question.class));
     }
 

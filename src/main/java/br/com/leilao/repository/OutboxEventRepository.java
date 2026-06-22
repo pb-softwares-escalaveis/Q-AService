@@ -1,6 +1,7 @@
 package br.com.leilao.repository;
 
 import br.com.leilao.domain.entity.OutboxEvent;
+import br.com.leilao.domain.enums.OutboxStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -10,5 +11,5 @@ import java.util.UUID;
 
 @Repository
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, UUID> {
-    List<OutboxEvent> findAllByOrderByCreatedAtAsc(Pageable pageable);
+    List<OutboxEvent> findByStatusOrderByCreatedAtAsc(OutboxStatus status, Pageable pageable);
 }

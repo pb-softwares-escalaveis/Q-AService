@@ -119,7 +119,7 @@ class AnswerServiceTest
 
         verify(answerRepository).save(any(Answer.class));
         verify(userClient).getUserById(sellerId);
-        verify(outboxEventPublisher).publish(eq("qa.review.created-pending"), any());
+        verify(outboxEventPublisher).publish(eq("qa.review.created-pending"), eq(String.valueOf(auctionId)), any());
     }
 
     @Test

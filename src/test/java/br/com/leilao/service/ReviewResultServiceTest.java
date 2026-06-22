@@ -102,7 +102,7 @@ class ReviewResultServiceTest
         assertEquals(ContentStatus.ACTIVE, question.getStatus());
 
         ArgumentCaptor<QuestionApprovedNotification> captor = ArgumentCaptor.forClass(QuestionApprovedNotification.class);
-        verify(outboxEventPublisher).publish(eq("qa.question.approved"), captor.capture());
+        verify(outboxEventPublisher).publish(eq("qa.question.approved"), eq(String.valueOf(auctionId)), captor.capture());
         assertEquals(sellerId, captor.getValue().recipientId());
         assertEquals(questionId, captor.getValue().questionId());
         assertEquals(correlationId, captor.getValue().correlationId());
@@ -121,7 +121,7 @@ class ReviewResultServiceTest
         assertEquals(ContentStatus.ACTIVE, answer.getStatus());
 
         ArgumentCaptor<AnswerApprovedNotification> captor = ArgumentCaptor.forClass(AnswerApprovedNotification.class);
-        verify(outboxEventPublisher).publish(eq("qa.answer.approved"), captor.capture());
+        verify(outboxEventPublisher).publish(eq("qa.answer.approved"), eq(String.valueOf(auctionId)), captor.capture());
         assertEquals(buyerId, captor.getValue().recipientId());
         assertEquals(questionId, captor.getValue().questionId());
         assertEquals(answerId, captor.getValue().answerId());
@@ -139,7 +139,7 @@ class ReviewResultServiceTest
         assertEquals("Conteúdo ofensivo", question.getRejectionReason());
 
         ArgumentCaptor<QuestionRejectedNotification> captor = ArgumentCaptor.forClass(QuestionRejectedNotification.class);
-        verify(outboxEventPublisher).publish(eq("qa.question.rejected"), captor.capture());
+        verify(outboxEventPublisher).publish(eq("qa.question.rejected"), eq(String.valueOf(auctionId)), captor.capture());
         assertEquals(buyerId, captor.getValue().recipientId());
         assertEquals("Conteúdo ofensivo", captor.getValue().reason());
     }
@@ -156,7 +156,7 @@ class ReviewResultServiceTest
         assertEquals("Spam", answer.getRejectionReason());
 
         ArgumentCaptor<AnswerRejectedNotification> captor = ArgumentCaptor.forClass(AnswerRejectedNotification.class);
-        verify(outboxEventPublisher).publish(eq("qa.answer.rejected"), captor.capture());
+        verify(outboxEventPublisher).publish(eq("qa.answer.rejected"), eq(String.valueOf(auctionId)), captor.capture());
         assertEquals(sellerId, captor.getValue().recipientId());
         assertEquals(answerId, captor.getValue().answerId());
         assertEquals("Spam", captor.getValue().reason());
@@ -175,7 +175,7 @@ class ReviewResultServiceTest
 
         assertEquals(ContentStatus.ACTIVE, question.getStatus());
         verify(questionRepository, never()).save(any());
-        verify(outboxEventPublisher, never()).publish(anyString(), any());
+        verify(outboxEventPublisher, never()).publish(anyString(), anyString(), any());
         verify(answerRepository, never()).findById(any());
     }
 
@@ -190,7 +190,7 @@ class ReviewResultServiceTest
 
         assertEquals(ContentStatus.DELETED, question.getStatus());
         verify(questionRepository, never()).save(any());
-        verify(outboxEventPublisher, never()).publish(anyString(), any());
+        verify(outboxEventPublisher, never()).publish(anyString(), anyString(), any());
     }
 
     @Test
@@ -204,7 +204,7 @@ class ReviewResultServiceTest
 
         assertEquals(ContentStatus.ACTIVE, answer.getStatus());
         verify(answerRepository, never()).save(any());
-        verify(outboxEventPublisher, never()).publish(anyString(), any());
+        verify(outboxEventPublisher, never()).publish(anyString(), anyString(), any());
     }
 
     @Test
@@ -219,6 +219,6 @@ class ReviewResultServiceTest
         assertEquals(ContentStatus.REJECTED, question.getStatus());
         assertEquals("Motivo original", question.getRejectionReason());
         verify(questionRepository, never()).save(any());
-        verify(outboxEventPublisher, never()).publish(anyString(), any());
+        verify(outboxEventPublisher, never()).publish(anyString(), anyString(), any());
     }
 }

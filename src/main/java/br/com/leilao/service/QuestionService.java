@@ -14,6 +14,8 @@ import br.com.leilao.integration.kafka.OutboxEventPublisher;
 import br.com.leilao.integration.kafka.events.MessageCreatedPendingReview;
 import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.QuestionMapper;
+import br.com.leilao.config.KafkaTopicsProperties;
+import org.springframework.cache.CacheManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
@@ -39,11 +41,10 @@ public class QuestionService
     private final OutboxEventPublisher outboxEventPublisher;
     private final QuestionMapper questionMapper;
     private final TransactionTemplate transactionTemplate;
+    private final KafkaTopicsProperties kafkaTopicsProperties;
+    private final CacheManager cacheManager;
 
-    @Value("${app.kafka.topics.qa-review-created-pending}")
-    private String topic;
-
-    @CacheEvict(value = "auction_questions", allEntries = true)
+    @CacheEvict(value = "auction_questions", key = "#auctionId")
     public QuestionResponse createQuestion(Long auctionId, UUID userId, boolean allowed, CreateQuestionRequest request)
     {
         if (!allowed) {
@@ -76,14 +77,13 @@ public class QuestionService
                     UUID.randomUUID()
             );
 
-            outboxEventPublisher.publish(topic, String.valueOf(auctionId), event);
+            outboxEventPublisher.publish(kafkaTopicsProperties.getQaReviewCreatedPending(), String.valueOf(auctionId), event);
 
             return questionMapper.toResponse(question);
         });
     }
 
     @Transactional
-    @CacheEvict(value = "auction_questions", allEntries = true)
     public void deleteQuestion(Long questionId, UUID userId)
     {
         Question question = questionRepository.findByIdOrThrow(questionId);
@@ -99,6 +99,11 @@ public class QuestionService
         question.setStatus(ContentStatus.DELETED);
         if (question.getAnswer() != null) {
             question.getAnswer().setStatus(ContentStatus.DELETED);
+        }
+
+        var cache = cacheManager.getCache("auction_questions");
+        if (cache != null) {
+            cache.evict(question.getAuctionId());
         }
     }
 

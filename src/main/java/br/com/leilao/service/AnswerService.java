@@ -16,8 +16,9 @@ import br.com.leilao.integration.kafka.events.MessageCreatedPendingReview;
 import br.com.leilao.repository.AnswerRepository;
 import br.com.leilao.repository.QuestionRepository;
 import br.com.leilao.service.mapper.AnswerMapper;
+import br.com.leilao.config.KafkaTopicsProperties;
+import org.springframework.cache.CacheManager;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,11 +38,9 @@ public class AnswerService
     private final OutboxEventPublisher outboxEventPublisher;
     private final AnswerMapper answerMapper;
     private final TransactionTemplate transactionTemplate;
+    private final KafkaTopicsProperties kafkaTopicsProperties;
+    private final CacheManager cacheManager;
 
-    @Value("${app.kafka.topics.qa-review-created-pending}")
-    private String topic;
-
-    @CacheEvict(value = "auction_questions", allEntries = true)
     public AnswerResponse createAnswer(Long questionId, UUID userId, boolean allowed, CreateAnswerRequest request)
     {
         if (!allowed) {
@@ -65,7 +64,7 @@ public class AnswerService
         // Chamada HTTP (Feign) fora da transação (mesmo motivo do QuestionService).
         UserResponse seller = userClient.getUserById(userId);
 
-        return transactionTemplate.execute(status -> {
+        AnswerResponse response = transactionTemplate.execute(status -> {
             Answer answer = Answer.builder()
                     .question(question)
                     .authorId(userId)
@@ -86,14 +85,20 @@ public class AnswerService
                     UUID.randomUUID()
             );
 
-            outboxEventPublisher.publish(topic, String.valueOf(question.getAuctionId()), event);
+            outboxEventPublisher.publish(kafkaTopicsProperties.getQaReviewCreatedPending(), String.valueOf(question.getAuctionId()), event);
 
             return answerMapper.toResponse(answer);
         });
+
+        var cache = cacheManager.getCache("auction_questions");
+        if (cache != null) {
+            cache.evict(question.getAuctionId());
+        }
+
+        return response;
     }
 
     @Transactional
-    @CacheEvict(value = "auction_questions", allEntries = true)
     public void deleteAnswer(Long questionId, Long answerId, UUID userId) {
         Answer answer = getAnswerById(answerId);
 
@@ -110,6 +115,11 @@ public class AnswerService
         }
 
         answer.setStatus(ContentStatus.DELETED);
+        
+        var cache = cacheManager.getCache("auction_questions");
+        if (cache != null) {
+            cache.evict(answer.getQuestion().getAuctionId());
+        }
     }
 
     private Answer getAnswerById(Long answerId)

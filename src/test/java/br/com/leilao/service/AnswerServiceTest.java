@@ -23,6 +23,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+import br.com.leilao.config.KafkaTopicsProperties;
+import org.springframework.cache.CacheManager;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -54,6 +56,12 @@ class AnswerServiceTest
     @Mock
     private TransactionTemplate transactionTemplate;
 
+    @Mock
+    private KafkaTopicsProperties kafkaTopicsProperties;
+
+    @Mock
+    private CacheManager cacheManager;
+
     @InjectMocks
     private AnswerService answerService;
 
@@ -70,7 +78,7 @@ class AnswerServiceTest
     @BeforeEach
     void setUp()
     {
-        ReflectionTestUtils.setField(answerService, "topic", "qa.review.created-pending");
+        lenient().when(kafkaTopicsProperties.getQaReviewCreatedPending()).thenReturn("qa.review.created-pending");
 
         auctionId = 1L;
         questionId = 100L;

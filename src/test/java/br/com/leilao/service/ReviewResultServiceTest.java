@@ -18,7 +18,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
+import br.com.leilao.config.KafkaTopicsProperties;
+import org.springframework.cache.CacheManager;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -44,6 +45,12 @@ class ReviewResultServiceTest
     @Mock
     private OutboxEventPublisher outboxEventPublisher;
 
+    @Mock
+    private KafkaTopicsProperties kafkaTopicsProperties;
+
+    @Mock
+    private CacheManager cacheManager;
+
     @InjectMocks
     private ReviewResultService reviewResultService;
 
@@ -60,10 +67,10 @@ class ReviewResultServiceTest
     @BeforeEach
     void setUp()
     {
-        ReflectionTestUtils.setField(reviewResultService, "questionApprovedTopic", "qa.question.approved");
-        ReflectionTestUtils.setField(reviewResultService, "answerApprovedTopic", "qa.answer.approved");
-        ReflectionTestUtils.setField(reviewResultService, "questionRejectedTopic", "qa.question.rejected");
-        ReflectionTestUtils.setField(reviewResultService, "answerRejectedTopic", "qa.answer.rejected");
+        org.mockito.Mockito.lenient().when(kafkaTopicsProperties.getNotifyQuestionApproved()).thenReturn("qa.question.approved");
+        org.mockito.Mockito.lenient().when(kafkaTopicsProperties.getNotifyAnswerApproved()).thenReturn("qa.answer.approved");
+        org.mockito.Mockito.lenient().when(kafkaTopicsProperties.getNotifyQuestionRejected()).thenReturn("qa.question.rejected");
+        org.mockito.Mockito.lenient().when(kafkaTopicsProperties.getNotifyAnswerRejected()).thenReturn("qa.answer.rejected");
 
         auctionId = 1L;
         questionId = 1000L;

@@ -12,8 +12,8 @@ import br.com.leilao.repository.AnswerRepository;
 import br.com.leilao.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
+import br.com.leilao.config.KafkaTopicsProperties;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,22 +28,14 @@ public class ReviewResultService
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
     private final OutboxEventPublisher outboxEventPublisher;
-
-    @Value("${app.kafka.topics.notify-question-approved}")
-    private String questionApprovedTopic;
-    @Value("${app.kafka.topics.notify-answer-approved}")
-    private String answerApprovedTopic;
-    @Value("${app.kafka.topics.notify-question-rejected}")
-    private String questionRejectedTopic;
-    @Value("${app.kafka.topics.notify-answer-rejected}")
-    private String answerRejectedTopic;
+    private final KafkaTopicsProperties kafkaTopicsProperties;
+    private final CacheManager cacheManager;
 
     /**
      * Marca o conteúdo como ACTIVE e enfileira a notificação:
      * pergunta aprovada -> vendedor; resposta aprovada -> autor da pergunta (comprador).
      */
     @Transactional
-    @CacheEvict(value = "auction_questions", allEntries = true)
     public void applyApproval(Long messageId, UUID correlationId)
     {
         Optional<Question> questionOpt = questionRepository.findById(messageId);
@@ -59,9 +51,14 @@ public class ReviewResultService
             question.setStatus(ContentStatus.ACTIVE);
             questionRepository.save(question);
 
-            outboxEventPublisher.publish(questionApprovedTopic,
+            outboxEventPublisher.publish(kafkaTopicsProperties.getNotifyQuestionApproved(),
                     String.valueOf(question.getAuctionId()),
                     QuestionApprovedNotification.forSellerOf(question, correlationId));
+
+            var cache = cacheManager.getCache("auction_questions");
+            if (cache != null) {
+                cache.evict(question.getAuctionId());
+            }
 
             log.info("[REVIEW-RESULT] Pergunta {} marcada como ACTIVE. Notificação para o vendedor {} enfileirada.",
                     question.getId(), question.getSellerId());
@@ -81,9 +78,14 @@ public class ReviewResultService
             answer.setStatus(ContentStatus.ACTIVE);
             answerRepository.save(answer);
 
-            outboxEventPublisher.publish(answerApprovedTopic,
+            outboxEventPublisher.publish(kafkaTopicsProperties.getNotifyAnswerApproved(),
                     String.valueOf(answer.getQuestion().getAuctionId()),
                     AnswerApprovedNotification.forBuyerOf(answer, correlationId));
+
+            var cache = cacheManager.getCache("auction_questions");
+            if (cache != null) {
+                cache.evict(answer.getQuestion().getAuctionId());
+            }
 
             log.info("[REVIEW-RESULT] Resposta {} marcada como ACTIVE. Notificação para o comprador {} enfileirada.",
                     answer.getId(), answer.getQuestion().getAuthorId());
@@ -98,7 +100,6 @@ public class ReviewResultService
      * pergunta rejeitada -> autor da pergunta (comprador); resposta rejeitada -> autor da resposta (vendedor).
      */
     @Transactional
-    @CacheEvict(value = "auction_questions", allEntries = true)
     public void applyRejection(Long messageId, String reason, UUID correlationId)
     {
         Optional<Question> questionOpt = questionRepository.findById(messageId);
@@ -115,9 +116,14 @@ public class ReviewResultService
             question.setRejectionReason(reason);
             questionRepository.save(question);
 
-            outboxEventPublisher.publish(questionRejectedTopic,
+            outboxEventPublisher.publish(kafkaTopicsProperties.getNotifyQuestionRejected(),
                     String.valueOf(question.getAuctionId()),
                     QuestionRejectedNotification.forAuthorOf(question, reason, correlationId));
+
+            var cache = cacheManager.getCache("auction_questions");
+            if (cache != null) {
+                cache.evict(question.getAuctionId());
+            }
 
             log.info("[REVIEW-RESULT] Pergunta {} marcada como REJECTED. Notificação para o autor {} enfileirada.",
                     question.getId(), question.getAuthorId());
@@ -137,9 +143,14 @@ public class ReviewResultService
             answer.setRejectionReason(reason);
             answerRepository.save(answer);
 
-            outboxEventPublisher.publish(answerRejectedTopic,
+            outboxEventPublisher.publish(kafkaTopicsProperties.getNotifyAnswerRejected(),
                     String.valueOf(answer.getQuestion().getAuctionId()),
                     AnswerRejectedNotification.forAuthorOf(answer, reason, correlationId));
+
+            var cache = cacheManager.getCache("auction_questions");
+            if (cache != null) {
+                cache.evict(answer.getQuestion().getAuctionId());
+            }
 
             log.info("[REVIEW-RESULT] Resposta {} marcada como REJECTED. Notificação para o autor {} enfileirada.",
                     answer.getId(), answer.getAuthorId());

@@ -53,6 +53,10 @@ public class QuestionService
 
         // Chamadas feign ficam FORA da transação para não segurar conexão do enquanto aguarda os serviços externos (auction-service / user-service).
         AuctionResponse auctionResponse = auctionClient.getAuctionById(auctionId);
+        if (auctionResponse.sellerId().equals(userId)) {
+            throw new InvalidOperationException("Você não pode fazer perguntas no seu próprio anúncio.");
+        }
+
         UserResponse author = userClient.getUserById(userId);
 
         return transactionTemplate.execute(status -> {

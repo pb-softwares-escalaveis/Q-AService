@@ -44,7 +44,7 @@ public class QuestionService
     private final KafkaTopicsProperties kafkaTopicsProperties;
     private final CacheManager cacheManager;
 
-    @CacheEvict(value = "auction_questions", key = "#auctionId")
+    @CacheEvict(value = "auction_questions", allEntries = true)
     public QuestionResponse createQuestion(Long auctionId, UUID userId, boolean allowed, CreateQuestionRequest request)
     {
         if (!allowed) {
@@ -101,9 +101,11 @@ public class QuestionService
             question.getAnswer().setStatus(ContentStatus.DELETED);
         }
 
+        // Listagem é cacheada por (auctionId-página); limpamos todas as entradas para
+        // não deixar página stale (evict por chave única não cobre todas as páginas).
         var cache = cacheManager.getCache("auction_questions");
         if (cache != null) {
-            cache.evict(question.getAuctionId());
+            cache.clear();
         }
     }
 

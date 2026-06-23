@@ -3,6 +3,7 @@ package br.com.leilao.integration.kafka;
 import br.com.leilao.domain.entity.OutboxEvent;
 import br.com.leilao.domain.enums.OutboxStatus;
 import br.com.leilao.repository.OutboxEventRepository;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,7 @@ public class OutboxProcessor
     private int maxAttempts;
 
     @Scheduled(fixedDelay = 10000)
+    @Timed(value = "qa.outbox.process.time", description = "Tempo de processamento de um ciclo do OutboxProcessor")
     public void processOutbox()
     {
         List<OutboxEvent> events = outboxEventRepository.findByStatusOrderByCreatedAtAsc(

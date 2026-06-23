@@ -57,7 +57,7 @@ public class ReviewResultService
 
             var cache = cacheManager.getCache("auction_questions");
             if (cache != null) {
-                cache.evict(question.getAuctionId());
+                cache.clear();
             }
 
             log.info("[REVIEW-RESULT] Pergunta {} marcada como ACTIVE. Notificação para o vendedor {} enfileirada.",
@@ -84,7 +84,7 @@ public class ReviewResultService
 
             var cache = cacheManager.getCache("auction_questions");
             if (cache != null) {
-                cache.evict(answer.getQuestion().getAuctionId());
+                cache.clear();
             }
 
             log.info("[REVIEW-RESULT] Resposta {} marcada como ACTIVE. Notificação para o comprador {} enfileirada.",
@@ -122,7 +122,7 @@ public class ReviewResultService
 
             var cache = cacheManager.getCache("auction_questions");
             if (cache != null) {
-                cache.evict(question.getAuctionId());
+                cache.clear();
             }
 
             log.info("[REVIEW-RESULT] Pergunta {} marcada como REJECTED. Notificação para o autor {} enfileirada.",
@@ -149,7 +149,7 @@ public class ReviewResultService
 
             var cache = cacheManager.getCache("auction_questions");
             if (cache != null) {
-                cache.evict(answer.getQuestion().getAuctionId());
+                cache.clear();
             }
 
             log.info("[REVIEW-RESULT] Resposta {} marcada como REJECTED. Notificação para o autor {} enfileirada.",

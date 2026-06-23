@@ -145,6 +145,25 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
+
+        <!-- Observabilidade -->
+        <!-- Métricas: expõe /actuator/prometheus (JVM, HTTP, Kafka, Hikari, cache, + customizadas) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Logs estruturados em JSON enviados ao Logstash (ELK) -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>8.0</version>
+        </dependency>
+        <!-- Tracing: popula traceId/spanId no MDC (correlação de logs) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

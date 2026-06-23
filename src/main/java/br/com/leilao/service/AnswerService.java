@@ -92,7 +92,7 @@ public class AnswerService
 
         var cache = cacheManager.getCache("auction_questions");
         if (cache != null) {
-            cache.evict(question.getAuctionId());
+            cache.clear();
         }
 
         return response;
@@ -115,10 +115,10 @@ public class AnswerService
         }
 
         answer.setStatus(ContentStatus.DELETED);
-        
+
         var cache = cacheManager.getCache("auction_questions");
         if (cache != null) {
-            cache.evict(answer.getQuestion().getAuctionId());
+            cache.clear();
         }
     }
 

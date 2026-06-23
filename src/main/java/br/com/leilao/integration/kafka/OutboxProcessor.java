@@ -20,7 +20,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OutboxProcessor
 {
-
     private static final int BATCH_SIZE = 50;
 
     private final OutboxEventRepository outboxEventRepository;

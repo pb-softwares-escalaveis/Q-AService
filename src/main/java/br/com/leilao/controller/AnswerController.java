@@ -17,7 +17,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AnswerController
 {
-
     private final AnswerService answerService;
 
     @RateLimited("create-answer")

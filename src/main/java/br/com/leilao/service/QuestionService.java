@@ -53,7 +53,7 @@ public class QuestionService
 
         // Chamadas feign ficam FORA da transação para não segurar conexão do enquanto aguarda os serviços externos (auction-service / user-service).
         AuctionResponse auctionResponse = auctionClient.getAuctionById(auctionId);
-        UserResponse seller = userClient.getUserById(auctionResponse.sellerId());
+        UserResponse author = userClient.getUserById(userId);
 
         return transactionTemplate.execute(status -> {
             Question question = Question.builder()
@@ -70,11 +70,11 @@ public class QuestionService
                     auctionId,
                     question.getSellerId(),
                     question.getId(),
-                    seller.nome(),
-                    seller.email(),
+                    author.nome(),
+                    author.email(),
                     question.getText(),
                     Instant.now(),
-                    UUID.randomUUID()
+                    userId
             );
 
             outboxEventPublisher.publish(kafkaTopicsProperties.getQaReviewCreatedPending(), String.valueOf(auctionId), event);

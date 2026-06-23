@@ -5,12 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Habilita o processamento da anotação {@code @Timed} (Micrometer) para métricas
- * customizadas de tempo de execução (ex.: {@code OutboxProcessor}). As métricas são
- * expostas em /actuator/prometheus pelo micrometer-registry-prometheus e raspadas
- * pelo Prometheus do stack de observabilidade.
- */
+
 @Configuration
 public class ObservabilityConfig
 {

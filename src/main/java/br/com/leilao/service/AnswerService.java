@@ -82,7 +82,7 @@ public class AnswerService
                     seller.email(),
                     answer.getText(),
                     Instant.now(),
-                    UUID.randomUUID()
+                    userId
             );
 
             outboxEventPublisher.publish(kafkaTopicsProperties.getQaReviewCreatedPending(), String.valueOf(question.getAuctionId()), event);

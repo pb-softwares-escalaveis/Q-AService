@@ -24,6 +24,7 @@ public class CacheConfig
     public RedisCacheConfiguration cacheConfiguration(
             @Value("${app.cache.auction-questions.ttl}") Duration auctionQuestionsTtl
     )
+     //bug java.time ?
     {
         ObjectMapper cacheObjectMapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
